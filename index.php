@@ -1,4 +1,4 @@
 <?php
 echo "kuku";
-include_once("index.html");
+include_once("build/index.html");
 ?>
