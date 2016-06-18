@@ -1,0 +1,3 @@
+RewriteEngine On
+
+RewriteRule ^.*$ /build/index.php [NC,L]
