@@ -18,7 +18,6 @@ gulp.task('wiredep', function () {
 
 gulp.task('useref', function () {
   return gulp.src('src/index.html')
-        // .pipe(useref())
         .pipe(useref({}, lazypipe().pipe(sourcemaps.init, { loadMaps: true })))
         .pipe(gulpif('*.js', uglify()))
         .pipe(gulpif('*.css', minifyCss()))
@@ -44,8 +43,8 @@ gulp.task('serve', function() {
     gulp.watch("src/**/*.*").on('change', browserSync.reload);
 });
 
-gulp.task('default', gulp.series('wiredep','serve'));
-// gulp.task('build', gulp.series('clean', gulp.parallel('wiredep')));
+gulp.task('default', gulp.series('wiredep','serve'));//gulp.parallel();
+
 gulp.task('build', gulp.series('clean','wiredep','useref'));
 // .on('data', function(file){
 // 	console.log('copy: '+file);
