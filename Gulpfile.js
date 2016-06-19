@@ -25,6 +25,11 @@ gulp.task('useref', function () {
         .pipe(gulp.dest('build'));
 });
 
+gulp.task('copy', function () {
+  return gulp.src('src/backend/*.*')
+    .pipe(gulp.dest('build/backend/'));
+});
+
 gulp.task('clean', function() {
   return del('!build/fonts', 'build');
 });
@@ -45,7 +50,7 @@ gulp.task('serve', function() {
 
 gulp.task('default', gulp.series('wiredep','serve'));//gulp.parallel();
 
-gulp.task('build', gulp.series('clean','wiredep','useref'));
+gulp.task('build', gulp.series('clean','copy','wiredep','useref'));
 // .on('data', function(file){
 // 	console.log('copy: '+file);
 // })
