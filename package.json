@@ -1,0 +1,20 @@
+{
+  "name": "operun",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.13.0",
+    "del": "^2.2.0",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-useref": "^3.1.0",
+    "gulp-watch": "^4.3.6",
+    "wiredep": "^4.0.0"
+  }
+}
