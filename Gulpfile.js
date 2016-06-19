@@ -3,8 +3,12 @@ var gulp 		    = require('gulp'),
     watch 		  = require('gulp-watch'),
     del         = require('del'),
     browserSync = require('browser-sync').create(),
-    concat 		  = require('gulp-concat'),
-    useref      = require('gulp-useref');
+    useref      = require('gulp-useref'),
+    gulpif      = require('gulp-if'),
+    uglify      = require('gulp-uglify'),
+    minifyCss   = require('gulp-minify-css'),
+    sourcemaps  = require('gulp-sourcemaps'),
+    lazypipe    = require('lazypipe');
 
 gulp.task('wiredep', function () {
   return gulp.src('src/index.html')
@@ -15,6 +19,10 @@ gulp.task('wiredep', function () {
 gulp.task('useref', function () {
   return gulp.src('src/index.html')
         .pipe(useref())
+        .pipe(useref({}, lazypipe().pipe(sourcemaps.init, { loadMaps: true })))
+        .pipe(gulpif('*.js', uglify()))
+        .pipe(gulpif('*.css', minifyCss()))
+        .pipe(sourcemaps.write('maps'))
         .pipe(gulp.dest('build'));
 });
 
@@ -36,13 +44,9 @@ gulp.task('serve', function() {
     gulp.watch("src/**/*.*").on('change', browserSync.reload);
 });
 
-gulp.task('default', gulp.series('serve'));
+gulp.task('default', gulp.series('wiredep','serve'));
 // gulp.task('build', gulp.series('clean', gulp.parallel('wiredep')));
-gulp.task('build', gulp.series('clean','useref'));
-// gulp.task('build', []);
+gulp.task('build', gulp.series('clean','wiredep','useref'));
 // .on('data', function(file){
 // 	console.log('copy: '+file);
 // })
-// gulp.task('default', function() {
-//   // place code for your default task here
-// });
