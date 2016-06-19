@@ -26,7 +26,7 @@ gulp.task('useref', function () {
 });
 
 gulp.task('clean', function() {
-  return del('build');
+  return del('!build/fonts', 'build');
 });
 
 // Static server
