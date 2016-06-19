@@ -18,11 +18,11 @@ gulp.task('wiredep', function () {
 
 gulp.task('useref', function () {
   return gulp.src('src/index.html')
-        .pipe(useref())
+        // .pipe(useref())
         .pipe(useref({}, lazypipe().pipe(sourcemaps.init, { loadMaps: true })))
         .pipe(gulpif('*.js', uglify()))
         .pipe(gulpif('*.css', minifyCss()))
-        .pipe(sourcemaps.write('maps'))
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('build'));
 });
 
