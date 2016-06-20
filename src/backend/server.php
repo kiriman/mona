@@ -21,23 +21,23 @@ if (!$db->set_charset("utf8")) {
     printf("Текущий набор символов: %s\n", $db->character_set_name());
 }
 
-$params = json_decode(trim(file_get_contents('php://input')), true);//split to array
-$q = $params['q'];
+// $params = json_decode(trim(file_get_contents('php://input')), true);//split to array
+// $q = $params['q'];
 
-echo "server echo: ".$q;
+// echo "server echo: ".$q;
 
 // || $result->num_rows
-// $result = $db->query("SELECT * FROM qwtyyvmxd9kj0xdi.comments");
-// if($result){
-//      // Cycle through results
-//     while ($row = $result->fetch_object()){
-//         $user_arr[] = $row;
-//     }
-//     // Free result set
-//     $result->close();
-//     $db->next_result();
-// }
-// print_r($user_arr);
+$result = $db->query("SELECT * FROM qwtyyvmxd9kj0xdi.comments");
+if($result){
+     // Cycle through results
+    while ($row = $result->fetch_object()){
+        $user_arr[] = $row;
+    }
+    // Free result set
+    $result->close();
+    $db->next_result();
+}
+print_r($user_arr);
 
 $db->close();
 
