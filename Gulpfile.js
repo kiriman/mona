@@ -11,12 +11,15 @@ var gulp 		= require('gulp'),
     lazypipe    = require('lazypipe'),
     connectPHP  = require('gulp-connect-php');
 
+// Include refs bower_components
 gulp.task('wiredep', function () {
   return gulp.src('src/index.html')
     .pipe(wiredep())
     .pipe(gulp.dest('src/'));
 });
 
+// Create sourceMap, uglify, css-min from refs in index.html
+// and copy to build/ direcroty.
 gulp.task('useref', function () {
   return gulp.src('src/index.html')
         .pipe(useref({}, lazypipe().pipe(sourcemaps.init, { loadMaps: true })))
@@ -26,13 +29,20 @@ gulp.task('useref', function () {
         .pipe(gulp.dest('build'));
 });
 
-gulp.task('copy', function () {
-  return gulp.src('src/api/*.*')
+// Copy static files
+gulp.task('copyApi', function () {
+  return gulp.src(['src/api/*.*'], {dot: true})
     .pipe(gulp.dest('build/api/'));
 });
+gulp.task('copyFonts', function () {
+  return gulp.src('bower_components/bootstrap/fonts/*.*')
+    .pipe(gulp.dest('build/fonts/'));
+});
+gulp.task('copy', gulp.parallel('copyApi','copyFonts'));
 
+// Clean buld/ directory
 gulp.task('clean', function() {
-  return del('!build/fonts', 'build');
+  return del('build');
 });
 
 // Static server Browser-Sync
@@ -49,14 +59,14 @@ gulp.task('browserSync', function() {
     gulp.watch("src/**/*.*").on('change', browserSync.reload);
 });
 
-//PHP сервер
+//PHP server
 gulp.task('php', function(){
   connectPHP.server({ base: 'src/', keepalive:true, hostname: '93.88.210.4', port:8080, open: false});
 });
 
-gulp.task('default', function() {});
+// gulp.task('default', function() {});
 gulp.task('serve', gulp.series('wiredep',gulp.parallel('browserSync','php')));
-gulp.task('build', gulp.series('clean','copy','wiredep','useref'));
+gulp.task('build', gulp.series('clean',gulp.parallel('copy','wiredep'),'useref'));
 // .on('data', function(file){
 // 	console.log('copy: '+file);
 // })
