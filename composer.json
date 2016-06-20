@@ -3,6 +3,5 @@
     "heroku/heroku-buildpack-php": "*"
   },
   "require": {
-    "silex/silex": "~2.0"
   }
 }
