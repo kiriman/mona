@@ -13,7 +13,8 @@ function ready(){
 function getComments(){
 	console.log('getComments - start');
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', serverUrl+'api/comments');
+	// xhr.open('GET', serverUrl+'api/comments');
+	xhr.open('GET', 'https://operun.herokuapp.com/api/comments');
 	xhr.send();
 	if (xhr.status != 200) {
 	  console.error( xhr.status + ': ' + xhr.statusText );
