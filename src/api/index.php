@@ -26,18 +26,11 @@ $pdo = new PDO($dsn, $username, $password, $options);
 // get the HTTP method, path and body of the request
 
 $method = $_SERVER['REQUEST_METHOD'];
-print_r($_SERVER['PATH_INFO']);
-echo "\n";
-$request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
+// $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
+$request = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
 $input = json_decode(file_get_contents('php://input'),true);
 
-$request_uri = $_SERVER['REQUEST_URI'];
 // print_r($method);
-print_r($request);
-echo "\n";
-print_r($request_uri);
-echo "\nuri\n";
-$request = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
 print_r($request);
 // print_r($input);
 
@@ -60,7 +53,7 @@ function isAdmin($pdo){
 switch ($method) {
   case 'GET':
     // $sql = "select * from `$table`".($key?" WHERE id=$key":'');
-    switch ($request[0]) {
+    switch ($request[1]) {
         case 'comments':
             $query='SELECT * FROM comments WHERE is_moderated = 1';
             if( isAdmin($pdo) ){
