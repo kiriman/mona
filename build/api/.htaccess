@@ -7,5 +7,5 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     #RewriteRule ^ index.php [QSA,L]
-    RewriteRule ^/index.php / [QSA,L]
+    RewriteRule ^api/index.php$ /api/ [QSA,L]
 </IfModule>
