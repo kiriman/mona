@@ -1,20 +1,18 @@
 "use strict";
 // console.log("main.js is started");
-document.addEventListener("DOMContentLoaded", ready);
+document.addEventListener("DOMContentLoaded", init);
 
-var serverUrl = 'https://operun.herokuapp.com/';
-// var serverUrl = 'http://93.88.210.4:8080/';
-
-function ready(){
-	console.log('ready');
+function init(){
+	console.log('init');
+	var serverUrl = 'https://operun.herokuapp.com/';
+	// var serverUrl = 'http://93.88.210.4:8080/';
 	getComments();
 }
 
 function getComments(){
 	console.log('getComments - start');
 	var xhr = new XMLHttpRequest();
-	// xhr.open('GET', serverUrl+'api/comments');
-	xhr.open('GET', 'https://operun.herokuapp.com/api/comments');
+	xhr.open('GET', serverUrl+'api/comments');
 	xhr.send();
 	if (xhr.status != 200) {
 	  console.error( xhr.status + ': ' + xhr.statusText );
