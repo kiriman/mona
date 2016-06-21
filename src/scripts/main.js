@@ -2,13 +2,16 @@
 console.log("main.js is started");
 document.addEventListener("DOMContentLoaded", ready);
 
+var serverUrl = 'https://operun.herokuapp.com/';
+// var serverUrl = 'http://93.88.210.4:8080/';
+
 function ready(){
 	getFeedbackData();
 }
 
 function getFeedbackData(){
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'backend/server.php?q=getfeedback');
+	xhr.open('GET', serverUrl+'api/comments');
 	xhr.send();
 	if (xhr.status != 200) {
 	  console.error( xhr.status + ': ' + xhr.statusText );

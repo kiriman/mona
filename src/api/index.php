@@ -31,7 +31,7 @@ $request = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
 $input = json_decode(file_get_contents('php://input'),true);
 
 // print_r($method);
-print_r($request);
+// print_r($request);
 // print_r($input);
 
 // $stmt = prepare('SELECT name FROM users WHERE email = :email');
