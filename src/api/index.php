@@ -1,7 +1,7 @@
 <?php
+// header("Access-Control-Allow-Origin: *");
 session_start();
 // $session_id = session_id();
-header("Access-Control-Allow-Origin: *");
 
 /*
     CONFIG: connect to MySQL
