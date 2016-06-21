@@ -26,13 +26,17 @@ $pdo = new PDO($dsn, $username, $password, $options);
 // get the HTTP method, path and body of the request
 
 $method = $_SERVER['REQUEST_METHOD'];
+print_r($_SERVER['PATH_INFO']);
+echo "\n";
 $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 $input = json_decode(file_get_contents('php://input'),true);
 
 $request_uri = $_SERVER['REQUEST_URI'];
 // print_r($method);
 print_r($request);
+echo "\n";
 print_r($request_uri);
+echo "\n";
 // print_r($input);
 
 // $stmt = prepare('SELECT name FROM users WHERE email = :email');
