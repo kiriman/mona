@@ -2,10 +2,11 @@
 // console.log("main.js is started");
 document.addEventListener("DOMContentLoaded", init);
 
+var serverUrl = 'https://operun.herokuapp.com/';
+// var serverUrl = 'http://93.88.210.4:8080/';
+
 function init(){
 	console.log('init');
-	var serverUrl = 'https://operun.herokuapp.com/';
-	// var serverUrl = 'http://93.88.210.4:8080/';
 	getComments();
 }
 
