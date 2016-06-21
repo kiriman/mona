@@ -29,7 +29,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 $input = json_decode(file_get_contents('php://input'),true);
 // print_r($method);
-// print_r($request);
+print_r($request);
 // print_r($input);
 
 // $stmt = prepare('SELECT name FROM users WHERE email = :email');
@@ -74,8 +74,7 @@ switch ($method) {
     // $sql = "delete `$table` where id=$key";
     break;
 }
-
-$stmt->closeCursor();
+// $stmt->closeCursor();
 $pdo = null;
 
 //logout session_destroy();
