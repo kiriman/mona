@@ -36,7 +36,9 @@ $request_uri = $_SERVER['REQUEST_URI'];
 print_r($request);
 echo "\n";
 print_r($request_uri);
-echo "\n";
+echo "\nuri\n";
+$request = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
+print_r($request);
 // print_r($input);
 
 // $stmt = prepare('SELECT name FROM users WHERE email = :email');
