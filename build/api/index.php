@@ -1,5 +1,9 @@
 <?php
-// header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Origin: *");
+// header("Access-Control-Allow-Methods: GET, POST, OPTIONS");         
+// $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
+// header("Access-Control-Allow-Headers: *");
+
 session_start();
 // $session_id = session_id();
 
