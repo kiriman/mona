@@ -74,8 +74,6 @@ switch ($method) {
     // $sql = "delete `$table` where id=$key";
     break;
 }
-
-// $stmt->closeCursor();
 $pdo = null;
 
 //logout session_destroy();
