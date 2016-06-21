@@ -75,7 +75,7 @@ switch ($method) {
     break;
 }
 
-$stmt->closeCursor();
+// $stmt->closeCursor();
 $pdo = null;
 
 //logout session_destroy();
