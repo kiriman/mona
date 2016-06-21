@@ -13,16 +13,16 @@ $options = array(
 $pdo = new PDO($dsn, $username, $password, $options);
 
 
-function isAdmin($pdo){
-    $session_id = "123457";
+function isAdmin() use(&$pdo){
+    $session_id = "12345";
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
     $stmt->execute(array('session_id' => $session_id));
     $r = $stmt->fetch();
     print_r($r);
     if($r){
-    	echo "true";
+    	echo "true\n";
     }else{
-    	echo "false";
+    	echo "false\n";
     }
 
 }
