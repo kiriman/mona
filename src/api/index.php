@@ -28,8 +28,11 @@ $pdo = new PDO($dsn, $username, $password, $options);
 $method = $_SERVER['REQUEST_METHOD'];
 $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 $input = json_decode(file_get_contents('php://input'),true);
+
+$request_uri = $_SERVER['REQUEST_URI'];
 // print_r($method);
 print_r($request);
+print_r($request_uri);
 // print_r($input);
 
 // $stmt = prepare('SELECT name FROM users WHERE email = :email');
