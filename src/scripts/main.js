@@ -1,15 +1,17 @@
 "use strict";
-console.log("main.js is started");
+// console.log("main.js is started");
 document.addEventListener("DOMContentLoaded", ready);
 
 var serverUrl = 'https://operun.herokuapp.com/';
 // var serverUrl = 'http://93.88.210.4:8080/';
 
 function ready(){
-	getFeedbackData();
+	console.log('ready');
+	getComments();
 }
 
-function getFeedbackData(){
+function getComments(){
+	console.log('getComments - start');
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', serverUrl+'api/comments');
 	xhr.send();
@@ -18,6 +20,7 @@ function getFeedbackData(){
 	} else {
 	  console.log( xhr.responseText );
 	}
+	console.log('getComments - stop');
 }
 
 
