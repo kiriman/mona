@@ -9,7 +9,8 @@ var gulp 		= require('gulp'),
     minifyCss   = require('gulp-minify-css'),
     sourcemaps  = require('gulp-sourcemaps'),
     lazypipe    = require('lazypipe'),
-    connectPHP  = require('gulp-connect-php');
+    connectPHP  = require('gulp-connect-php'),
+    babel       = require('gulp-babel');
 
 // Include refs bower_components
 gulp.task('wiredep', function () {
@@ -23,7 +24,8 @@ gulp.task('wiredep', function () {
 gulp.task('useref', function () {
   return gulp.src('src/index.html')
         .pipe(useref({}, lazypipe().pipe(sourcemaps.init, { loadMaps: true })))
-        .pipe(gulpif('*.js', uglify()))
+        .pipe(gulpif('*.js', babel({presets: ['es2015']}) ))
+        .pipe(gulpif('*.js', uglify() ))//.on('error', function(e){console.log(e);}) ))
         .pipe(gulpif('*.css', minifyCss()))
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('build'));

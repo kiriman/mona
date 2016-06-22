@@ -1,8 +1,8 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-// header("Access-Control-Allow-Methods: GET, POST, OPTIONS");         
+header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");         
 // $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
-// header("Access-Control-Allow-Headers: *");
+// header("Access-Control-Allow-Headers: application/json");
 
 session_start();
 // $session_id = session_id();
@@ -54,31 +54,45 @@ $isAdmin = function () use ($pdo) {
 };
 
 // create SQL based on HTTP method
-
 switch ($method) {
-  case 'GET':
-    // $sql = "select * from `$table`".($key?" WHERE id=$key":'');
-    switch ($request[1]) {
-        case 'comments':
-            $query='SELECT * FROM comments WHERE is_moderated = 1';
-            if( $isAdmin ){
-                $query='SELECT * FROM comments';
-            }
+    case 'GET':
+        // $sql = "select * from `$table`".($key?" WHERE id=$key":'');
+        switch ($request[1]) {
+            case 'comments':
+                $query='SELECT * FROM comments WHERE is_moderated = 1';
+                if( $isAdmin ){
+                    $query='SELECT * FROM comments';
+                }
 
-            $stmt = $pdo->prepare($query);
-            $stmt->execute();
-            echo json_encode( $stmt->fetchAll() );
-        break;
-    }
+                $stmt = $pdo->prepare($query);
+                $stmt->execute();
+                echo json_encode( $stmt->fetchAll() );
+            break;
+        }
     break;
-  case 'PUT':
-    // $sql = "update `$table` set $set where id=$key";
+
+    case 'PUT':
+        // $sql = "update `$table` set $set where id=$key";
+        switch ($request[1]) {
+            case 'comments':
+                if( !$isAdmin ) return null;
+                // $query='UPDATE comments SET text = :text WHERE id = :id';
+                // $stmt = $pdo->prepare($query);
+                // $stmt->execute(array('text' => $text, 'id' => $id));
+                // $stmt->execute();
+                
+                // echo json_encode( $stmt->fetchAll() );
+                echo "kuku: ".$input;
+            break;
+        }
     break;
-  case 'POST':
-    // $sql = "insert into `$table` set $set";
+
+    case 'POST':
+        // $sql = "insert into `$table` set $set";
     break;
-  case 'DELETE':
-    // $sql = "delete `$table` where id=$key";
+
+    case 'DELETE':
+        // $sql = "delete `$table` where id=$key";
     break;
 }
 // $stmt->closeCursor();
