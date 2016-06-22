@@ -11,6 +11,8 @@ var serverUrl = 'http://93.88.210.4:8080/api/';
 var wrapper = document.getElementById("wrapper");
 
 var comments = [];
+var currentId = null;
+var updateCommentsProc = false;
 
 // функция получения комментариев с сервера
 function getCommentsRequest(){
@@ -49,27 +51,6 @@ function addComments(comments){
 }
 
 // функция создания html-блока комментария
-// function createCommentTemplate(comment){
-// 	var html = [
-// 		'<div class="panel panel-default" id="comment-'+comment.id+'">',
-// 	      '<div class="panel-heading">',
-// 	        '<div class="row">',
-// 	          '<div class="col-sm-6">',
-// 	            '<h3 class="panel-title">'+comment.name+' ('+comment.email+')</h3>',
-// 	          '</div>',
-// 	          '<div class="col-sm-6">',
-// 	            '<h5 class="panel-title add-date"><span class="admin-edit">'+isEdited(comment.is_edited)+'</span> '+comment.create_time+'</h5>',
-// 	          '</div>',
-// 	        '</div>',
-// 	      '</div>',
-// 	      '<div class="panel-body" onclick="editText(this)" id="text-'+comment.id+'">'+comment.text+'</div>',
-// 	    '</div>',
-// 	].join("\n");
-
-// 	return html;
-// }
-
-// функция создания html-блока комментария
 function createCommentTemplate(comment){
 	var html = 
 		`<div class="panel panel-default" id="comment-`+comment.id+`">
@@ -86,7 +67,6 @@ function createCommentTemplate(comment){
 	      <div class="panel-body" onclick="startEditText('`+comment.id+`')" id="text-`+comment.id+`">`+comment.text+`</div>
 	    </div>`
 	;
-
 	return html;
 }
 
@@ -101,41 +81,61 @@ function isEdited(is_edited){
 function editCommentTemplate(id, text){
 	var html = 
 		`<div class="panel-body">
-			<textarea class="form-control" id="editText" rows="3" placeholder="editText">`+text+`</textarea>
+			<textarea class="form-control" id="newText" rows="3" placeholder="newText" >`+text+`</textarea>
 			<p>
 			<div class="form-inline">
-	    		<button class="btn btn-default" onclick="saveEditText('`+id+`')">Сохранить</button>
-	      		<button class="btn btn-default" onclick="cancelEditText('`+id+`')">Отмена</button>
+	    		<button class="btn btn-default" id="saveNewTextBtn" onclick="updateCommentsRequest('`+id+`')">Сохранить</button>
+	      		<button class="btn btn-default" id="cancelNewTextBtn" onclick="cancelEditText()">Отмена</button>
       		</div>
 		</div>`
 	;
 	return html;
 }
-function cancelEditText(id){
-	var text = document.getElementById("text-"+id);
-	// var parent = document.getElementById("comment-"+id);
-	text.style.display="block";
-	text.parentNode.lastChild.remove();
-}
-function saveEditText(id){
-	var text = document.getElementById("text-"+id);
-	var editText = document.getElementById("editText").value;
-	// text.innerHTML = document.getElementById("editText").value;
-	if( updateCommentsRequest(id, editText) ){
-		text.innerHTML = editText;
+
+function startEditText(id){
+	if(updateCommentsProc){return;}
+	if(currentId != null){
+		cancelEditText( currentId );
 	}
-	text.style.display="block";
-	text.parentNode.lastChild.remove();
+	currentId = id;		
+	var text = document.getElementById("text-"+currentId);
+	var currentEditBlock = document.createElement("div");
+	currentEditBlock.innerHTML = editCommentTemplate(currentId, text.innerHTML);
+	text.style.display="none";
+	text.parentNode.appendChild( currentEditBlock );
 }
-function updateCommentsRequest_test(id, editText){
-	return true;
+
+function cancelEditText(){
+	var currentText = document.getElementById("text-"+currentId);
+	currentText.style.display="block";
+	currentText.parentNode.lastChild.remove();
+	
+	currentId = null;
 }
-// функция получения комментариев с сервера
-function updateCommentsRequest(id, editText){
+
+function saveEditText(id){
+	var currentText = document.getElementById("text-"+id);
+	var newText = document.getElementById("newText").value;
+	// alert("alert: "+updateCommentsRequest(id, newText));
+	if( updateCommentsRequest(id, newText) ){
+		currentText.innerHTML = newText;
+	}
+	currentText.style.display="block";
+	currentText.parentNode.lastChild.remove();
+}
+
+// функция изменения комментария на сервере
+function updateCommentsRequest(id){
+	disableEditTextBlock();
+	updateCommentsProc = true;
+
+	var currentText = document.getElementById("text-"+id);
+	var newText = document.getElementById("newText").value;
+
 	var xhr = new XMLHttpRequest();
 	var data = JSON.stringify({
   						id: id,
-						editText: editText
+						newText: newText
 		});
 	console.log(data);
 	xhr.open('PUT', serverUrl+'comments', true);//true - асинхронно
@@ -148,58 +148,34 @@ function updateCommentsRequest(id, editText){
 		if (xhr.status != 200) {
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
+			var result = JSON.parse( xhr.responseText );
+			console.log(result.status);
 
-		  // result = JSON.parse(xhr.responseText);
-		  console.log( xhr.responseText );
-		  // console.log( JSON.stringify(result) );
+			if( result.status ){
+				currentId = null;
+				currentText.innerHTML = newText;
+				currentText.style.display="block";
+				currentText.parentNode.lastChild.remove();
+			}
+
+		  // JSON.parse();
+		  // JSON.stringify();
 		  // console.log( result[0]['text'] );
 
 		}
+		updateCommentsProc = false;
 	}
 }
-function startEditText(id){
-	var text = document.getElementById("text-"+id);
-	var currentEditBlock = document.createElement("div");
-	currentEditBlock.innerHTML = editCommentTemplate(id, text.innerHTML);
 
-	text.style.display="none";
-	text.parentNode.appendChild( currentEditBlock );
-
-	// tooltips[ elem.name ].setAttribute("name", "tooltip");
-	// tooltips[ elem.name ].className = "alert";
-	// tooltips[ elem.name ].innerHTML = msg;
-
-	// el.style.visibility = "hidden";//visible
-	// console.log(el.parentNode.innerHTML);
-	// var p = el.parentNode;
-	// var elems = document.getElementById("comment-2");//.lastChild.innerHTML;
-	// for (var i = elems.childNodes.length - 1; i >= 0; i--) {
-	// 	console.log(elems.childNodes[i].tagName);
-	// };
-	// console.log("editText() el: "+elems.children.length);// 2
-	// console.log("editText() el: "+elems.lastElementChild.innerHTML);// text
-	// console.log("comment: "+JSON.stringify(comment));
-	// var el = document.getElementById("text-2").innerHTML;
-	// console.log("comment: "+id);
-	// var el = document.getElementById("text-"+id).innerHTML;
-	// console.log("editText() el: "+el);
-	// console.log("editText() el: "+elems.childNodes[elems.childNodes.length - 2].innerHTML );
-	// var elems = document.documentElement.childNodes;
-	// elems = Array.prototype.slice.call(elems); // теперь elems - массив
-
-	// elems.forEach(function(elem) {
-	//   console.log( elem.tagName ); // HEAD, текст, BODY
-	// });
-	// child()
-	// childNodes.length
-
-	// var el = document.createElement("div");
-	// el.innerHTML = "new div";
-
-	// e.appendChild(el);
-
-	//worked: e.innerHTML -> 'This my second comment'
-	// e.innerHTML = "kuku";
+function disableEditTextBlock(){
+	document.getElementById("newText").disabled = true;
+	document.getElementById("saveNewTextBtn").disabled = true;
+	document.getElementById("cancelNewTextBtn").disabled = true;
+}
+function enableEditTextBlock(){
+	document.getElementById("newText").disabled = false;
+	document.getElementById("saveNewTextBtn").disabled = false;
+	document.getElementById("cancelNewTextBtn").disabled = false;
 }
 
 // функция получения данных из формы обратной связи
@@ -217,16 +193,3 @@ function getFormData(){
 	// console.log( inputEmail.value );
 	// console.log( inputText.value );
 // }
-
-function tmpF(){
-	console.log("tmpF");
-	console.log( document.getElementById("ku").innerHTML );
-}
-
-
-///////////////////////
-// http://jsfiddle.net/Z7R5n/
-// var nodeList = Array.prototype.slice.call( document.getElementById('myULelement').children ),
-//     liRef = document.getElementsByClassName('match')[0];
-
-// console.log( nodeList.indexOf( liRef ) );

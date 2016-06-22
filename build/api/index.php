@@ -33,7 +33,8 @@ $pdo = new PDO($dsn, $username, $password, $options);
 $method = $_SERVER['REQUEST_METHOD'];
 // $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 $request = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
-$input = json_decode(file_get_contents('php://input'),true);
+$input = json_decode(trim(file_get_contents('php://input')), true);//split to array
+$response = [];
 
 // print_r($method);
 // print_r($request);
@@ -43,7 +44,7 @@ $input = json_decode(file_get_contents('php://input'),true);
 // $stmt->execute(array('email' => $email));
 
 $isAdmin = function () use ($pdo) {
-    $session_id = "12345777";
+    $session_id = "12345";
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
     $stmt->execute(array('session_id' => $session_id));
     if( $stmt->fetch() ){
@@ -60,7 +61,7 @@ switch ($method) {
         switch ($request[1]) {
             case 'comments':
                 $query='SELECT * FROM comments WHERE is_moderated = 1';
-                if( $isAdmin ){
+                if( $isAdmin() ){
                     $query='SELECT * FROM comments';
                 }
 
@@ -75,14 +76,15 @@ switch ($method) {
         // $sql = "update `$table` set $set where id=$key";
         switch ($request[1]) {
             case 'comments':
-                if( !$isAdmin ) return null;
-                // $query='UPDATE comments SET text = :text WHERE id = :id';
-                // $stmt = $pdo->prepare($query);
-                // $stmt->execute(array('text' => $text, 'id' => $id));
-                // $stmt->execute();
-                
-                // echo json_encode( $stmt->fetchAll() );
-                echo "kuku: ".$input;
+                if( !$isAdmin() ){exit;};
+                $id = $input['id'];
+                $newText = $input['newText'];
+                $query='UPDATE comments SET text = :newText WHERE id = :id';
+                $stmt = $pdo->prepare($query);
+                $stmt->execute(array('newText' => $newText, 'id' => $id));
+
+                $response['status'] = true;
+                echo json_encode( $response );
             break;
         }
     break;

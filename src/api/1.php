@@ -12,21 +12,17 @@ $options = array(
 );
 $pdo = new PDO($dsn, $username, $password, $options);
 
+// function isAdmin() use(&$pdo){
+//     $session_id = "12345";
+//     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
+//     $stmt->execute(array('session_id' => $session_id));
+//     $r = $stmt->fetch();
+//     print_r($r);
+//     if($r){
+//     	echo "true\n";
+//     }else{
+//     	echo "false\n";
+//     }
+// }
 
-function isAdmin() use(&$pdo){
-    $session_id = "12345";
-    $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
-    $stmt->execute(array('session_id' => $session_id));
-    $r = $stmt->fetch();
-    print_r($r);
-    if($r){
-    	echo "true\n";
-    }else{
-    	echo "false\n";
-    }
-
-}
-
-$t = isAdmin($pdo);
-echo json_encode($t);
 ?>
