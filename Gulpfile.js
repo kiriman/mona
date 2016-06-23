@@ -63,7 +63,7 @@ gulp.task('browserSync', function() {
 
 //PHP server
 gulp.task('php', function(){
-  connectPHP.server({ base: 'src/', keepalive:true, hostname: '93.88.210.4', port:8080, open: true});
+  connectPHP.server({ base: 'src/', keepalive:true, hostname: '93.88.210.4', port:8080, open: false});
 });
 
 // gulp.task('default', function() {});

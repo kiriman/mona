@@ -4,8 +4,8 @@
 document.addEventListener("DOMContentLoaded", getCommentsRequest);
 
 // url бэкенд сервера
-var serverUrl = 'https://operun.herokuapp.com/api/';
-// var serverUrl = 'http://93.88.210.4:8080/api/';
+// var serverUrl = 'https://operun.herokuapp.com/api/';
+var serverUrl = 'http://93.88.210.4:8080/api/';
 
 // блок в который будут добавлены загруженные с сервера комментарии
 var wrapper = document.getElementById("wrapper");
@@ -14,14 +14,28 @@ var comments = [];
 var currentId = null;
 var updateCommentsProc = false;
 var user = {
-	login: "",
+	login: getCookie("userName") || "",
+	isadmin: false,
 	session_id: ""
 }
+console.log("getcookie: "+getCookie("userName"));
+
+// возвращает cookie с именем name, если есть, если нет, то undefined
+function getCookie(name) {
+  var matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+showHideAuthForm(user.login);
+console.info( document.cookie );	
 
 // функция получения комментариев с сервера
 function getCommentsRequest(){
 	wrapper.innerHTML = "Загрузка...";
 	var xhr = new XMLHttpRequest();
+	xhr.withCredentials = true;
+
 	xhr.open('GET', serverUrl+'comments', true);//true - асинхронно
 	xhr.send();
 	xhr.onreadystatechange = function() {
@@ -31,12 +45,15 @@ function getCommentsRequest(){
 		if (xhr.status != 200) {
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
-		  wrapper.innerHTML = "";
-		  // comments = JSON.parse(xhr.responseText);
+			var response = JSON.parse(xhr.responseText);
+			if(response.status){
+				wrapper.innerHTML = "";
+				user.isadmin = response.isadmin;
+				comments = JSON.parse(response.data);
 
-		  //добавляем комментарии на страницу
-		  // addComments(comments);
-		  console.log("getCommentsRequest session_id: "+xhr.responseText);
+				//добавляем комментарии на страницу
+				addComments(comments, response.isadmin);
+			}		  
 		}
 	}
 }
@@ -44,33 +61,61 @@ function getCommentsRequest(){
 // функция добавления комментариев
 function addComments(comments){
 	for (var i = comments.length - 1; i >= 0; i--) {
-		// создаем html-блок комментария по шаблону
-		var commentTemplate = createCommentTemplate(comments[i]);
 
+		// создаем html-блок комментария по шаблону
 		var newComment = document.createElement("div");
+		newComment.className = "panel panel-default";
+		newComment.setAttribute("id", "comment-"+comments[i]['id']);
+		var commentTemplate = createCommentTemplate(comments[i]);
 	 	newComment.innerHTML = commentTemplate;
+
+	 	if(user.isadmin){
+	 		// создаем футер html-блока по шаблону
+	 		console.log("add footer");
+	 		var newFooter = document.createElement("div");
+	 		newFooter.className = "panel-footer text-right";
+	 		newFooter.setAttribute("id", "footer-"+comments[i]['id']);
+	 		var footerTemplate = createFooterTemplate(comments[i]);
+	 		newFooter.innerHTML = footerTemplate;
+	 		newComment.appendChild(newFooter);
+	 	}
 
 	 	// добавляем созданый html-блок с комментарием на страницу
 		wrapper.appendChild(newComment);
+
 	};
 }
-
+function createFooterTemplate(comment){
+	var html =
+	 `
+		<div class="btn-group" data-toggle="buttons" >
+		  <label class="btn btn-default btn-xs `+ismoderatedBtnClass(comment.is_moderated, 1)+`" onclick="changeModerateState(`+comment.id+`, 1)" >
+		    <input type="radio" name="options-`+comment.id+`" id="option1-`+comment.id+`" > принять
+		  </label>
+		  <label class="btn btn-default btn-xs `+ismoderatedBtnClass(comment.is_moderated, 2)+`" onclick="changeModerateState(`+comment.id+`, 0)">
+		    <input type="radio" name="options-`+comment.id+`" id="option2-`+comment.id+`" > отклонить
+		  </label>
+		</div>`
+	;
+	return html;
+	//autocomplete="off" checked>btn btn-default btn-xs
+	// `+ismoderatedBtnCheck(comment.is_moderated, 1)+`
+}
 // функция создания html-блока комментария
 function createCommentTemplate(comment){
 	var html = 
-		`<div class="panel panel-default" id="comment-`+comment.id+`">
-	      <div class="panel-heading">
+		 `<div class="panel-heading">
 	        <div class="row">
 	          <div class="col-sm-6">
 	            <h3 class="panel-title">`+comment.name+` (`+comment.email+`)</h3>
 	          </div>
 	          <div class="col-sm-6">
-	            <h5 class="panel-title add-date"><span class="admin-edit">`+isEdited(comment.is_edited)+`</span> `+comment.create_time+`</h5>
+	            <h5 class="panel-title add-date"><span class="admin-edit" id="isedited-`+comment.id+`">`+isEdited(comment.is_edited)+`</span> `+comment.create_time+`</h5>
 	          </div>
 	        </div>
 	      </div>
 	      <div class="panel-body" onclick="startEditText('`+comment.id+`')" id="text-`+comment.id+`">`+comment.text+`</div>
-	    </div>`
+	      `
 	;
 	return html;
 }
@@ -81,6 +126,73 @@ function isEdited(is_edited){
 		return "изменен администратором";
 	}
 	return "";
+}
+function footerComment(){
+	if(user.isadmin){
+		return "block";
+	}
+	return "none";
+}
+function ismoderatedBtnClass(is_moderated, option){
+	if(is_moderated == 1 && option == 1){
+		return "active";
+	}
+	if(is_moderated == 0 && option == 2){
+		return "active";
+	}
+	return "";
+}
+function ismoderatedBtnCheck(is_moderated, option){
+	if(is_moderated == 1 && option == 1){
+		return "checked=true";
+	}
+	if(is_moderated == 0 && option == 2){
+		return "checked=true";
+	}
+	return "";
+}
+function changeModerateState(id, is_moderated){
+	var xhr = new XMLHttpRequest();
+	xhr.withCredentials = true;
+	var data = JSON.stringify({
+  						id: id,
+						is_moderated: is_moderated
+		});
+
+	xhr.open('PUT', serverUrl+'moderate', true);//true - асинхронно
+	xhr.send(data);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState != 4){//отправка данных завершена
+			return;
+		}
+		if (xhr.status != 200) {
+		  console.error( xhr.status + ': ' + xhr.statusText );
+		} else {
+			var result = JSON.parse( xhr.responseText );
+			// console.log(result.status);
+
+			if( result.status ){
+				console.log("changed");
+				// document.getElementById("isedited-"+currentId).innerHTML = "изменен администратором...";
+				// currentId = null;
+				// currentText.innerHTML = newText;
+				// currentText.style.display="block";
+				// currentText.parentNode.lastChild.remove();
+			}
+		}
+		// updateCommentsProc = false;
+	}
+	
+	// if(document.getElementById('option1-'+id).checked){
+	// 	console.log("check:1");
+	// }else{
+	// 	console.log("check:2");
+	// }
+	// if(document.getElementById('option2-'+id).checked){
+	// 	console.log("check:2");
+	// }
+	// console.log("id: "+ id);
+	// console.log( document.querySelector('input[name="options-'+id+'"]:checked').id );
 }
 
 function editCommentTemplate(id, text){
@@ -139,6 +251,7 @@ function updateCommentsRequest(id){
 	var newText = document.getElementById("newText").value;
 
 	var xhr = new XMLHttpRequest();
+	xhr.withCredentials = true;
 	var data = JSON.stringify({
   						id: id,
 						newText: newText
@@ -154,9 +267,10 @@ function updateCommentsRequest(id){
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
 			var result = JSON.parse( xhr.responseText );
-			console.log(result.status);
+			// console.log(result.status);
 
 			if( result.status ){
+				document.getElementById("isedited-"+currentId).innerHTML = "изменен администратором...";
 				currentId = null;
 				currentText.innerHTML = newText;
 				currentText.style.display="block";
@@ -228,6 +342,7 @@ function addCommentRequest(){
 	var comment = getFormData();
 
 	var xhr = new XMLHttpRequest();
+	xhr.withCredentials = true;
 	var data = JSON.stringify(comment);
 
 	// console.log(data);
@@ -274,6 +389,7 @@ function signIn(){
 	var credential = getSigninFormData();
 
 	var xhr = new XMLHttpRequest();
+	xhr.withCredentials = true;
 	var data = JSON.stringify(credential);
 
 	console.log(data);
@@ -293,12 +409,14 @@ function signIn(){
 			if( result.status ){
 				//очищаем форму обратнойсвязи
 				// clearFormData();
-				
 				user.login = result.login;
 				user.session_id = result.session_id;
-				document.getElementById("userLogin").innerHTML = user.login;
-				document.getElementById("form-signin").style.display = "none";
-				document.getElementById("form-signout").style.display = "block";
+				document.cookie = "userName="+user.login;//, isadmin="+result.isadmin;
+				// showHideAuthForm("show");
+				showHideAuthForm(user.login);
+				// document.getElementById("userLogin").innerHTML = user.login;
+				// document.getElementById("form-signin").style.display = "none";
+				// document.getElementById("form-signout").style.display = "block";
 
 				getCommentsRequest();
 			}else{
@@ -308,7 +426,51 @@ function signIn(){
 	}
 }
 function signOut(){
-	document.getElementById("form-signin").style.display = "block";
-	document.getElementById("form-signout").style.display = "none";
-	document.getElementById("userLogin").innerHTML = "";	
+	document.cookie = "userName=";
+	var xhr = new XMLHttpRequest();
+	xhr.withCredentials = true;
+	xhr.open('GET', serverUrl+'signout', true);
+	xhr.send();
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState != 4){//отправка данных завершена
+			return;
+		}
+		if (xhr.status != 200) {
+		  console.error( xhr.status + ': ' + xhr.statusText );
+		} else {
+			var result = JSON.parse( xhr.responseText );
+			// console.log("signOut stop: "+xhr.responseText);
+
+			if( result.status ){
+				
+				user.login = "";
+				user.session_id = "";
+				document.cookie = "userName=";
+
+				// showHideAuthForm("hide");
+				showHideAuthForm(user.login);
+				getCommentsRequest();
+			}else{
+				alert("Ошибка.");
+			}
+		}
+	}
+	// document.getElementById("form-signin").style.display = "block";
+	// document.getElementById("form-signout").style.display = "none";
+	// document.getElementById("userLogin").innerHTML = "";	
 }
+
+function showHideAuthForm(userName){
+	if(userName != ""){
+		//show form
+		document.getElementById("userLogin").innerHTML = user.login;
+		document.getElementById("form-signin").style.display = "none";
+		document.getElementById("form-signout").style.display = "block";
+	}else{
+		//hide form
+		document.getElementById("userLogin").innerHTML = user.login;
+		document.getElementById("form-signin").style.display = "block";
+		document.getElementById("form-signout").style.display = "none";
+	}
+}
+

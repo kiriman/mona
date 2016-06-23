@@ -11,3 +11,6 @@ body{
 	color: grey;
 	font-size: 12px;
 }
+.text-right{
+	text-align: right;
+}

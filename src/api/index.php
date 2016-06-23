@@ -1,10 +1,11 @@
 <?php
 session_start();
-$session_id = session_id();
-// echo "\nSESSION-ID: ".$session_id."\n";
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");         
+// https://devcenter.heroku.com/articles/php-sessions
+
+header("Access-Control-Allow-Origin: http://93.88.210.4:3001");
+header("Access-Control-Allow-Credentials: true");       
+header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");
 // $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
 // header("Access-Control-Allow-Headers: application/json");
 
@@ -32,60 +33,88 @@ $pdo = new PDO($dsn, $username, $password, $options);
 
 // get the HTTP method, path and body of the request
 
-$method = $_SERVER['REQUEST_METHOD'];
 // $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
+$method = $_SERVER['REQUEST_METHOD'];
 $request = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
 $input = json_decode(trim(file_get_contents('php://input')), true);//split to array
 $response = [];
 
-// print_r($method);
-// print_r($request);
-// print_r($input);
-
-// $stmt = prepare('SELECT name FROM users WHERE email = :email');
-// $stmt->execute(array('email' => $email));
-
 $isAdmin = function () use ($pdo) {
     // $session_id = "12345";
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
-    $stmt->execute( array( 'session_id' => $session_id ) );
+    $stmt->execute( array( 'session_id' => session_id() ) );
     if( $stmt->fetch() ){
         return true;
     }else{
         return false;
     }
 };
+// $values = function () use ($input){
+//     $arr = [];
+//     foreach ($input as $key => $value) {
+//         if($key != "id"){
+//             $arr[$key] = $value;
+//         }
+//     }
+//     return $arr;
+// };
 
 // create SQL based on HTTP method
 switch ($method) {
     case 'GET':
-        // $sql = "select * from `$table`".($key?" WHERE id=$key":'');
         switch ($request[1]) {
             case 'comments':
-                // $query='SELECT * FROM comments WHERE is_moderated = 1';
-                // if( $isAdmin() ){
-                //     $query='SELECT * FROM comments';
-                // }
+                $query='SELECT * FROM comments WHERE is_moderated = 1';
+                $response['isadmin'] = false;
+                if( $isAdmin() ){
+                    $query='SELECT * FROM comments';
+                    $response['isadmin'] = true;
+                }
 
-                // $stmt = $pdo->prepare($query);
-                // $stmt->execute();
+                $stmt = $pdo->prepare($query);
+                $stmt->execute();
+                $response['status'] = true;
+                $response['data'] = json_encode( $stmt->fetchAll() );
+                echo json_encode( $response );
                 // echo json_encode( $stmt->fetchAll() );
 
-                echo "\nGET: ".$session_id."\n";
+            break;
+            case 'signout':
+                $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
+                $stmt->execute( array( 'session_id' => session_id() ) );
+                $user = $stmt->fetch();
+
+                $query='UPDATE users SET session_id = :session_id WHERE id = :id';
+                $stmt = $pdo->prepare($query);
+                $stmt->execute(array('session_id' => '0', 'id' => $user['id'] ));
+
+                $response['status'] = true;
+                echo json_encode( $response );
+
             break;
         }
     break;
 
     case 'PUT':
-        // $sql = "update `$table` set $set where id=$key";
         switch ($request[1]) {
             case 'comments':
                 if( !$isAdmin() ){exit;};
                 $id = $input['id'];
                 $newText = $input['newText'];
-                $query='UPDATE comments SET text = :newText WHERE id = :id';
+                $query='UPDATE comments SET text = :newText, is_edited = :is_edited WHERE id = :id';
                 $stmt = $pdo->prepare($query);
-                $stmt->execute(array('newText' => $newText, 'id' => $id));
+                $stmt->execute(array('newText' => $newText, 'is_edited' => '1', 'id' => $id));
+
+                $response['status'] = true;
+                echo json_encode( $response );
+            break;
+            case 'moderate':
+                if( !$isAdmin() ){exit;};
+                $id = $input['id'];
+                $is_moderated = $input['is_moderated'];
+                $query='UPDATE comments SET is_moderated = :is_moderated WHERE id = :id';
+                $stmt = $pdo->prepare($query);
+                $stmt->execute(array('is_moderated' => $is_moderated, 'id' => $id));
 
                 $response['status'] = true;
                 echo json_encode( $response );
@@ -94,7 +123,6 @@ switch ($method) {
     break;
 
     case 'POST':
-        // $sql = "insert into `$table` set $set";
         switch ($request[1]) {
             case 'comments':
                 if( !$isAdmin() ){exit;};
@@ -123,16 +151,18 @@ switch ($method) {
                         'password' => $input['password']
                         )
                     );
-                $count = $stmt->rowCount();
-                if($count == 1){
-                    global $session_id;
+                // $count = $stmt->rowCount();
+                $user = $stmt->fetch();
+                // if($count == 1){
+                if($user){
                     $query='UPDATE users SET session_id = :session_id WHERE login = :login';
                     $stmt = $pdo->prepare($query);
-                    $stmt->execute(array('session_id' => $session_id, 'login' => $input['login']));
+                    $stmt->execute(array('session_id' => session_id(), 'login' => $user['login']));
 
                     $response['status'] = true;
-                    $response['login'] = $input['login'];
-                    $response['session_id'] = $session_id;
+                    $response['login'] = $user['login'];
+                    // $response['isadmin'] = $user['is_admin'];
+                    $response['session_id'] = session_id();
                 }else{
                     $response['status'] = false;
                 }
@@ -142,7 +172,7 @@ switch ($method) {
     break;
 
     case 'DELETE':
-        // $sql = "delete `$table` where id=$key";
+        
     break;
 }
 // $stmt->closeCursor();
