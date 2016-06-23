@@ -5,7 +5,7 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");
 // header("Access-Control-Allow-Headers: application/json");
 
 session_start();
-// $session_id = session_id();
+// global $session_id = session_id();
 
 /*
     CONFIG: connect to MySQL
@@ -44,9 +44,9 @@ $response = [];
 // $stmt->execute(array('email' => $email));
 
 $isAdmin = function () use ($pdo) {
-    $session_id = "12345";
+    // $session_id = "12345";
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
-    $stmt->execute(array('session_id' => $session_id));
+    $stmt->execute( array( 'session_id' => session_id() ) );
     if( $stmt->fetch() ){
         return true;
     }else{
@@ -60,14 +60,15 @@ switch ($method) {
         // $sql = "select * from `$table`".($key?" WHERE id=$key":'');
         switch ($request[1]) {
             case 'comments':
-                $query='SELECT * FROM comments WHERE is_moderated = 1';
-                if( $isAdmin() ){
-                    $query='SELECT * FROM comments';
-                }
+                // $query='SELECT * FROM comments WHERE is_moderated = 1';
+                // if( $isAdmin() ){
+                //     $query='SELECT * FROM comments';
+                // }
 
-                $stmt = $pdo->prepare($query);
-                $stmt->execute();
-                echo json_encode( $stmt->fetchAll() );
+                // $stmt = $pdo->prepare($query);
+                // $stmt->execute();
+                // echo json_encode( $stmt->fetchAll() );
+                echo session_id();
             break;
         }
     break;
@@ -91,6 +92,49 @@ switch ($method) {
 
     case 'POST':
         // $sql = "insert into `$table` set $set";
+        switch ($request[1]) {
+            case 'comments':
+                if( !$isAdmin() ){exit;};
+                $id = $input['id'];
+                $newText = $input['newText'];
+                $query='INSERT INTO comments SET name = :name, email = :email, text = :text';
+                $stmt = $pdo->prepare($query);
+                $stmt->execute(
+                    array(
+                        'login' => $input['name'],
+                        'email' => $input['email'],
+                        'text' => $input['text']
+                        )
+                    );
+
+                $response['status'] = true;
+                echo json_encode( $response );
+            break;
+
+            case 'signin':
+                $query='SELECT * FROM users WHERE login = :login AND password = :password LIMIT 1';
+                $stmt = $pdo->prepare($query);
+                $stmt->execute(
+                    array(
+                        'login' => $input['login'],
+                        'password' => $input['password']
+                        )
+                    );
+                $count = $stmt->rowCount();
+                if($count == 1){
+                    $query='UPDATE users SET session_id = :session_id WHERE login = :login';
+                    $stmt = $pdo->prepare($query);
+                    $stmt->execute(array('session_id' => session_id(), 'login' => $input['login']));
+
+                    $response['status'] = true;
+                    $response['login'] = $input['login'];
+                    $response['session_id'] = session_id();
+                }else{
+                    $response['status'] = false;
+                }
+                echo json_encode( $response );
+            break;
+        }
     break;
 
     case 'DELETE':
