@@ -1,11 +1,11 @@
 <?php
+session_start();
+// $session_id = session_id();
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");         
 // $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
 // header("Access-Control-Allow-Headers: application/json");
 
-session_start();
-// global $session_id = session_id();
 
 /*
     CONFIG: connect to MySQL
@@ -45,6 +45,7 @@ $response = [];
 
 $isAdmin = function () use ($pdo) {
     // $session_id = "12345";
+    global $session_id_glob;
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
     $stmt->execute( array( 'session_id' => session_id() ) );
     if( $stmt->fetch() ){
@@ -68,6 +69,7 @@ switch ($method) {
                 // $stmt = $pdo->prepare($query);
                 // $stmt->execute();
                 // echo json_encode( $stmt->fetchAll() );
+
                 echo session_id();
             break;
         }

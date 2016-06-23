@@ -4,8 +4,8 @@
 document.addEventListener("DOMContentLoaded", getCommentsRequest);
 
 // url бэкенд сервера
-var serverUrl = 'https://operun.herokuapp.com/api/';
-// var serverUrl = 'http://93.88.210.4:8080/api/';
+// var serverUrl = 'https://operun.herokuapp.com/api/';
+var serverUrl = 'http://93.88.210.4:8080/api/';
 
 // блок в который будут добавлены загруженные с сервера комментарии
 var wrapper = document.getElementById("wrapper");
