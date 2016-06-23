@@ -1,6 +1,8 @@
 <?php
 session_start();
-// $session_id = session_id();
+$session_id = session_id();
+// echo "\nSESSION-ID: ".$session_id."\n";
+
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");         
 // $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
@@ -45,9 +47,8 @@ $response = [];
 
 $isAdmin = function () use ($pdo) {
     // $session_id = "12345";
-    global $session_id_glob;
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
-    $stmt->execute( array( 'session_id' => session_id() ) );
+    $stmt->execute( array( 'session_id' => $session_id ) );
     if( $stmt->fetch() ){
         return true;
     }else{
@@ -70,7 +71,7 @@ switch ($method) {
                 // $stmt->execute();
                 // echo json_encode( $stmt->fetchAll() );
 
-                echo session_id();
+                echo "\nGET: ".$session_id."\n";
             break;
         }
     break;
@@ -124,13 +125,14 @@ switch ($method) {
                     );
                 $count = $stmt->rowCount();
                 if($count == 1){
+                    global $session_id;
                     $query='UPDATE users SET session_id = :session_id WHERE login = :login';
                     $stmt = $pdo->prepare($query);
-                    $stmt->execute(array('session_id' => session_id(), 'login' => $input['login']));
+                    $stmt->execute(array('session_id' => $session_id, 'login' => $input['login']));
 
                     $response['status'] = true;
                     $response['login'] = $input['login'];
-                    $response['session_id'] = session_id();
+                    $response['session_id'] = $session_id;
                 }else{
                     $response['status'] = false;
                 }

@@ -4,8 +4,8 @@
 document.addEventListener("DOMContentLoaded", getCommentsRequest);
 
 // url бэкенд сервера
-// var serverUrl = 'https://operun.herokuapp.com/api/';
-var serverUrl = 'http://93.88.210.4:8080/api/';
+var serverUrl = 'https://operun.herokuapp.com/api/';
+// var serverUrl = 'http://93.88.210.4:8080/api/';
 
 // блок в который будут добавлены загруженные с сервера комментарии
 var wrapper = document.getElementById("wrapper");
@@ -288,7 +288,7 @@ function signIn(){
 		} else {
 			// console.log(xhr.responseText);
 			var result = JSON.parse( xhr.responseText );
-			console.log("signIn session_id: "+result.session_id);
+			console.log("signIn() session_id: "+result.session_id);
 
 			if( result.status ){
 				//очищаем форму обратнойсвязи
