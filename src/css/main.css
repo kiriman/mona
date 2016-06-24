@@ -14,3 +14,18 @@ body{
 .text-right{
 	text-align: right;
 }
+.thumbnail{
+	width: 320px;
+	height: 240px;
+	margin: auto;
+	border-radius: 4px;
+}
+.thumbnail-min{
+	width: 64px;
+	height: 48px;
+	border-radius: 4px;
+}
+.modal-dialog{
+	width: 360px;
+	margin: 200px auto;
+}

@@ -101,6 +101,7 @@
       <div class="form-group">
         <div class="col-sm-offset-2 col-sm-8" >
           <label for="inputFile">Прикрепить картинку</label>
+          <img src="http://mobiliv.ru/_ph/139/2/768290635.jpg" class="thumbnail-min">
           <input type="file" id="inputFile">
           <!-- <p class="help-block"></p>
           <button type="submit" class="btn btn-default">Отправить</button>
@@ -108,6 +109,30 @@
           <button class="btn btn-default" onclick="event.preventDefault(); cancelPeview()" id="cancelPeviewBtn">Отмена</button> -->
         </div>
       </div>
+      
+      <!-- <div class="media">
+        <div class="media-left media-top">
+          <a href="#">
+            <img class="media-object thumbnail-min" src="http://mobiliv.ru/_ph/139/2/768290635.jpg">
+          </a>
+        </div>
+        <div class="media-body">
+          <h4 class="media-heading">Middle aligned media</h4>
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+          text text text text text text text text 
+        </div>
+      </div> -->
+
     </form>
 
     <div class="col-sm-offset-2 col-sm-10" style="margin-left: 95px;">
@@ -128,15 +153,16 @@
 </button> -->
 
 <!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="modalImage" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header">
+      <!-- <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="myModalLabel">Вход</h4>
-      </div>
-      <div class="modal-body">
-        <form class="form-horizontal" name="form-auth" id="form-auth123">
+      </div> -->
+      <div class="modal-body" id="modalImageBlock">
+
+        <!-- <form class="form-horizontal" name="form-auth" id="form-auth123">
           <div class="form-group">
             <label for="inputName" class="col-sm-2 control-label">Имя</label>
             <div class="col-sm-8">
@@ -149,14 +175,14 @@
               <input type="password" class="form-control" id="inputAuthPassword123" placeholder="Пароль">
             </div>
           </div>
-        </form>
+        </form> -->
 
       </div>
-      <div class="modal-footer">
+      <!-- <div class="modal-footer">
         <button type="button" class="btn btn-primary">Войти</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
       </div>
-    </div>
+    </div> -->
   </div>
 </div>
 

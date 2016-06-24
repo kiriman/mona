@@ -4,8 +4,8 @@
 document.addEventListener("DOMContentLoaded", getCommentsRequest);
 
 // url бэкенд сервера
-var serverUrl = 'https://operun.herokuapp.com/api/';
- // var serverUrl = 'http://93.88.210.4:8080/api/';
+// var serverUrl = 'https://operun.herokuapp.com/api/';
+var serverUrl = 'http://93.88.210.4:8080/api/';
 
 // блок в который будут добавлены загруженные с сервера комментарии
 var wrapper = document.getElementById("wrapper");
@@ -33,7 +33,9 @@ console.info( document.cookie );
 // функция получения комментариев с сервера
 function getCommentsRequest(){
 	wrapper.innerHTML = "Загрузка...";
-	var xhr = new XMLHttpRequest();
+	// var xhr = new XMLHttpRequest();
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var xhr = new XHR();
 	xhr.withCredentials = true;
 
 	xhr.open('GET', serverUrl+'comments', true);//true - асинхронно
@@ -114,10 +116,36 @@ function createCommentTemplate(comment){
 	          </div>
 	        </div>
 	      </div>
-	      <div class="panel-body" onclick="startEditText('`+comment.id+`')" id="text-`+comment.id+`">`+comment.text+`</div>
+	      <div class="panel-body" onclick="startEditText('`+comment.id+`')" id="text-`+comment.id+`">
+	      
+	      	<div class="media">
+		        <div class="media-body">
+		          `+comment.text+`
+		        </div>
+		        <div class="media-right media-top">
+		          <a href="#" onclick="openModal()">
+		            <img class="media-object thumbnail-min" src="http://mobiliv.ru/_ph/139/2/768290635.jpg">
+		          </a>
+		        </div>
+		      </div>
+
+	      </div>
 	      `
 	;
 	return html;
+}
+
+function openModal(){
+	var img = document.createElement("img");
+	img.className = "thumbnail";
+	img.setAttribute("src", "http://mobiliv.ru/_ph/139/2/768290635.jpg");
+
+	var modalImageBlock = document.getElementById("modalImageBlock");
+	while (modalImageBlock.firstChild) {
+	    modalImageBlock.removeChild(modalImageBlock.firstChild);
+	}
+	modalImageBlock.appendChild(img);
+	$('#modalImage').modal();
 }
 
 // функция проверки на изменения комметария администратором
@@ -320,7 +348,7 @@ function preview(){
 	var comment = getFormData();
 	comment.id = "preview";
 	comment.create_time = new Date().toLocaleString("ru")
-	
+
 	var preveiwComment = document.createElement("div");
 	preveiwComment.className = "panel panel-default";
 	preveiwComment.setAttribute("id", "comment-preview");
