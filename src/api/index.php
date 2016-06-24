@@ -88,6 +88,7 @@ switch ($method) {
                 $stmt = $pdo->prepare($query);
                 $stmt->execute(array('session_id' => '0', 'id' => $user['id'] ));
 
+                // session_destroy();
                 $response['status'] = true;
                 echo json_encode( $response );
 
@@ -103,10 +104,11 @@ switch ($method) {
                 $newText = $input['newText'];
                 $query='UPDATE comments SET text = :newText, is_edited = :is_edited WHERE id = :id';
                 $stmt = $pdo->prepare($query);
-                $stmt->execute(array('newText' => $newText, 'is_edited' => '1', 'id' => $id));
+                $stmt->execute(array('newText' => strip_tags($newText), 'is_edited' => '1', 'id' => $id));
 
                 $response['status'] = true;
                 echo json_encode( $response );
+
             break;
             case 'moderate':
                 if( !$isAdmin() ){exit;};
@@ -125,23 +127,43 @@ switch ($method) {
     case 'POST':
         switch ($request[1]) {
             case 'comments':
-                if( !$isAdmin() ){exit;};
                 $id = $input['id'];
                 $newText = $input['newText'];
                 $query='INSERT INTO comments SET name = :name, email = :email, text = :text';
                 $stmt = $pdo->prepare($query);
-                $stmt->execute(
-                    array(
-                        'login' => $input['name'],
-                        'email' => $input['email'],
-                        'text' => $input['text']
-                        )
-                    );
+                // $stmt->execute(
+                //     array(
+                //         'login' => strip_tags($input['name']),
+                //         'email' => strip_tags($input['email']),
+                //         'text' => strip_tags($input['text'])
+                //         )
+                //     );
 
                 $response['status'] = true;
                 echo json_encode( $response );
-            break;
 
+            break;
+            case 'upload':
+                $response = [];
+                // проверяем является ли загруженный тип файла: gif, jpeg, png
+                if( exif_imagetype($_FILES['myfile']['tmp_name']) == IMAGETYPE_GIF
+                    || exif_imagetype($_FILES['myfile']['tmp_name']) == IMAGETYPE_JPEG
+                    || exif_imagetype($_FILES['myfile']['tmp_name']) == IMAGETYPE_PNG)
+                {
+                    $filename = $_FILES['myfile']['name'];
+                    $destination = './../uploads/' . $filename;// /wwwroot/uploads/
+                    move_uploaded_file( $_FILES['myfile']['tmp_name'] , $destination );
+
+                    $response["message"] = "file uploaded";
+                    $response["status"] = true;
+                    echo json_encode($response);
+                }else{
+                    $response["message"] = "file format error";
+                    $response["status"] = false;
+                    echo json_encode($response);
+                }
+
+            break;
             case 'signin':
                 $query='SELECT * FROM users WHERE login = :login AND password = :password LIMIT 1';
                 $stmt = $pdo->prepare($query);
@@ -153,7 +175,6 @@ switch ($method) {
                     );
                 // $count = $stmt->rowCount();
                 $user = $stmt->fetch();
-                // if($count == 1){
                 if($user){
                     $query='UPDATE users SET session_id = :session_id WHERE login = :login';
                     $stmt = $pdo->prepare($query);
@@ -177,12 +198,5 @@ switch ($method) {
 }
 // $stmt->closeCursor();
 $pdo = null;
-
-//logout session_destroy();
-
-// if($_SESSION['counter']>3){
-//     unset($_SESSION['counter']);
-//     // session_unregister('var');
-// }
 
 ?>

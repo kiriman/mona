@@ -1,5 +1,5 @@
 body{
-	background-color: whitesmoke;
+	background-color: white;
 }
 .starter-template{
 	margin-top: 100px;
@@ -25,7 +25,42 @@ body{
 	height: 48px;
 	border-radius: 4px;
 }
+.thumbnail-mid{
+	width: 128px;
+	height: 96px;
+	border-radius: 4px;
+}
+.thumbnail-mid-empty{
+	width: 128px;
+	height: 96px;
+	/*line-height: 18px;*/
+	border-radius: 4px;
+	background-color: whitesmoke;
+	border: 1px solid lightgrey;
+	display: table;
+}
+.thumbnail-mid-empty:hover{
+	border: 1px solid lightgreen;	
+	cursor: pointer;
+}
+.thumbnail-mid-empty>div{
+	display: table-cell;
+	vertical-align: middle;
+	color: grey;
+	text-align: center; 
+}
 .modal-dialog{
 	width: 360px;
 	margin: 200px auto;
+}
+pre.media-body{
+	background-color: white;
+	padding: 0;
+	border-color: white;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+}
+
+hr{
+	border-top: 1px solid lightgrey;
 }

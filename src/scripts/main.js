@@ -18,7 +18,7 @@ var user = {
 	isadmin: false,
 	session_id: ""
 }
-console.log("getcookie: "+getCookie("userName"));
+showHideAuthForm(user.login);
 
 // возвращает cookie с именем name, если есть, если нет, то undefined
 function getCookie(name) {
@@ -27,8 +27,7 @@ function getCookie(name) {
   ));
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
-showHideAuthForm(user.login);
-console.info( document.cookie );	
+
 
 // функция получения комментариев с сервера
 function getCommentsRequest(){
@@ -37,7 +36,6 @@ function getCommentsRequest(){
 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-
 	xhr.open('GET', serverUrl+'comments', true);//true - асинхронно
 	xhr.send();
 	xhr.onreadystatechange = function() {
@@ -73,7 +71,6 @@ function addComments(comments){
 
 	 	if(user.isadmin){
 	 		// создаем футер html-блока по шаблону
-	 		console.log("add footer");
 	 		var newFooter = document.createElement("div");
 	 		newFooter.className = "panel-footer text-right";
 	 		newFooter.setAttribute("id", "footer-"+comments[i]['id']);
@@ -109,21 +106,19 @@ function createCommentTemplate(comment){
 		 `<div class="panel-heading">
 	        <div class="row">
 	          <div class="col-sm-6">
-	            <h3 class="panel-title">`+comment.name+` (`+comment.email+`)</h3>
+	            <h3 class="panel-title"><b>`+comment.name+`</b> (`+comment.email+`)</h3>
 	          </div>
 	          <div class="col-sm-6">
 	            <h5 class="panel-title add-date"><span class="admin-edit" id="isedited-`+comment.id+`">`+isEdited(comment.is_edited)+`</span> `+comment.create_time+`</h5>
 	          </div>
 	        </div>
 	      </div>
-	      <div class="panel-body" onclick="startEditText('`+comment.id+`')" id="text-`+comment.id+`">
+	      <div class="panel-body" >
 	      
-	      	<div class="media">
-		        <div class="media-body">
-		          `+comment.text+`
-		        </div>
+	      	  <div class="media">
+		        <pre class="media-body" onclick="startEditText('`+comment.id+`')" id="text-`+comment.id+`">`+comment.text+`</pre>
 		        <div class="media-right media-top">
-		          <a href="#" onclick="openModal()">
+		          <a href="#" onclick="openImageModal()">
 		            <img class="media-object thumbnail-min" src="http://mobiliv.ru/_ph/139/2/768290635.jpg">
 		          </a>
 		        </div>
@@ -135,7 +130,7 @@ function createCommentTemplate(comment){
 	return html;
 }
 
-function openModal(){
+function openImageModal(){
 	var img = document.createElement("img");
 	img.className = "thumbnail";
 	img.setAttribute("src", "http://mobiliv.ru/_ph/139/2/768290635.jpg");
@@ -180,13 +175,14 @@ function ismoderatedBtnCheck(is_moderated, option){
 	return "";
 }
 function changeModerateState(id, is_moderated){
-	var xhr = new XMLHttpRequest();
-	xhr.withCredentials = true;
+	// var xhr = new XMLHttpRequest();
 	var data = JSON.stringify({
   						id: id,
 						is_moderated: is_moderated
 		});
-
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var xhr = new XHR();
+	xhr.withCredentials = true;
 	xhr.open('PUT', serverUrl+'moderate', true);//true - асинхронно
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
@@ -226,7 +222,7 @@ function changeModerateState(id, is_moderated){
 function editCommentTemplate(id, text){
 	var html = 
 		`<div class="panel-body">
-			<textarea class="form-control" id="newText" rows="3" placeholder="newText" >`+text+`</textarea>
+			<textarea class="form-control" id="newText" rows="3" placeholder="Текст" >`+text+`</textarea>
 			<p>
 			<div class="form-inline" style="text-align: right;">
 	    		<button class="btn btn-default" id="saveNewTextBtn" onclick="updateCommentsRequest('`+id+`')">Сохранить</button>
@@ -245,19 +241,26 @@ function startEditText(id){
 		cancelEditText( currentId );
 	}
 	currentId = id;		
+	
 	var text = document.getElementById("text-"+currentId);
+	text.parentNode.parentNode.style.display="none";//hide current text (<div class="panel-body">)
+	
 	var currentEditBlock = document.createElement("div");
 	currentEditBlock.innerHTML = editCommentTemplate(currentId, text.innerHTML);
-	text.style.display="none";//hide current text
-	text.parentNode.lastChild.style.display="none";// hide footer
-	text.parentNode.appendChild( currentEditBlock );//add edit textarea
+	text.parentNode.parentNode.parentNode.lastChild.style.display="none";// hide footer (<div class="panel-footer">)
+	text.parentNode.parentNode.parentNode.appendChild( currentEditBlock );//add edit textarea
+	
+	// text.style.display="none";//hide current text
+	// text.parentNode.lastChild.style.display="none";// hide footer
+	// text.parentNode.appendChild( currentEditBlock );//add edit textarea
+	// text.parentNode.insertBefore(currentEditBlock, text.parentNode.children[0]);
 }
 
 function cancelEditText(){
 	var currentText = document.getElementById("text-"+currentId);
-	currentText.style.display="block";
-	currentText.parentNode.lastChild.remove();
-	currentText.parentNode.lastChild.style.display="block";
+	currentText.parentNode.parentNode.style.display="block";
+	currentText.parentNode.parentNode.parentNode.lastChild.remove();
+	currentText.parentNode.parentNode.parentNode.lastChild.style.display="block";
 	
 	currentId = null;
 }
@@ -281,13 +284,14 @@ function updateCommentsRequest(id){
 	var currentText = document.getElementById("text-"+id);
 	var newText = document.getElementById("newText").value;
 
-	var xhr = new XMLHttpRequest();
-	xhr.withCredentials = true;
 	var data = JSON.stringify({
   						id: id,
 						newText: newText
 		});
-
+	// var xhr = new XMLHttpRequest();
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var xhr = new XHR();
+	xhr.withCredentials = true;
 	xhr.open('PUT', serverUrl+'comments', true);//true - асинхронно
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
@@ -304,8 +308,9 @@ function updateCommentsRequest(id){
 				document.getElementById("isedited-"+currentId).innerHTML = "изменен администратором...";
 				currentId = null;
 				currentText.innerHTML = newText;
-				currentText.style.display="block";
-				currentText.parentNode.lastChild.remove();
+				currentText.parentNode.parentNode.style.display="block";
+				currentText.parentNode.parentNode.parentNode.lastChild.remove();
+				currentText.parentNode.parentNode.parentNode.lastChild.style.display="block";
 			}
 		}
 		updateCommentsProc = false;
@@ -344,7 +349,16 @@ function clearFormData(){
 }
 
 function preview(){
-	if(!validate()){return;}
+	// if(!validate()){return;}
+
+	document.getElementById("formGroupBtn").parentNode.className = "col-sm-12";
+	// var cancelBtn = document.createElement('button');
+	// cancelBtn.className = "btn btn-default";
+	// cancelBtn.setAttribute("onclick", "cancelPreview()");
+	// cancelBtn.setAttribute("id", "cancelPreviewBtn");
+	// cancelBtn.innerHTML = "Cancel123"
+	// document.getElementById("formGroupBtn").appendChild(cancelBtn);
+	// <button class="btn btn-default" onclick="cancelPreview()" id="cancelPreviewBtn" style="display: none;">Отмена</button>
 	var comment = getFormData();
 	comment.id = "preview";
 	comment.create_time = new Date().toLocaleString("ru")
@@ -360,28 +374,31 @@ function preview(){
 
 	document.getElementById("form-feedback").style.display = "none";
 	document.getElementById("previewBtn").style.display = "none";
-	document.getElementById("cancelPreviewBtn").style.display = "block";
+	document.getElementById("cancelPreviewBtn").style.display = "inline";
 }
 function cancelPreview(){
-	document.getElementById("form-feedback").style.display = "block";
-	document.getElementById("comment-preview").remove();
-	document.getElementById("previewBtn").style.display = "block";
-	document.getElementById("cancelPreviewBtn").style.display = "none";
-	
+	if(document.getElementById("comment-preview")){	
+		document.getElementById("formGroupBtn").parentNode.className = "col-sm-8";
+
+		document.getElementById("form-feedback").style.display = "block";
+		document.getElementById("comment-preview").remove();
+		document.getElementById("previewBtn").style.display = "inline";
+		document.getElementById("cancelPreviewBtn").style.display = "none";
+	}
+
 }
 
-
 function addCommentRequest(){
-	// disableEditTextBlock();
 	if(!validate()){return;}
+	document.getElementById("addCommentBtn").disabled = true;
 	updateCommentsProc = true;
+
 	var comment = getFormData();
-
-	var xhr = new XMLHttpRequest();
-	xhr.withCredentials = true;
 	var data = JSON.stringify(comment);
-
-	// console.log(data);
+	// var xhr = new XMLHttpRequest();
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var xhr = new XHR();
+	xhr.withCredentials = true;
 	xhr.open('POST', serverUrl+'comments', true);//true - асинхронно
 	// xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
 	xhr.send(data);
@@ -398,8 +415,12 @@ function addCommentRequest(){
 			if( result.status ){
 				//очищаем форму обратнойсвязи
 				clearFormData();
+				//удаляем html-блок preview (если есть)
+				cancelPreview();
 			}
 		}
+
+		document.getElementById("addCommentBtn").disabled = false;
 		updateCommentsProc = false;
 	}
 }
@@ -415,12 +436,11 @@ function getSigninFormData(){
 }
 function signIn(){
 	var credential = getSigninFormData();
-
-	var xhr = new XMLHttpRequest();
-	xhr.withCredentials = true;
 	var data = JSON.stringify(credential);
-
-	console.log(data);
+	// var xhr = new XMLHttpRequest();
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var xhr = new XHR();
+	xhr.withCredentials = true;
 	xhr.open('POST', serverUrl+'signin', true);
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
@@ -430,10 +450,7 @@ function signIn(){
 		if (xhr.status != 200) {
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
-			// console.log(xhr.responseText);
 			var result = JSON.parse( xhr.responseText );
-			console.log("signIn() session_id: "+result.session_id);
-
 			if( result.status ){
 				user.login = result.login;
 				user.session_id = result.session_id;
@@ -448,7 +465,9 @@ function signIn(){
 }
 function signOut(){
 	document.cookie = "userName=";
-	var xhr = new XMLHttpRequest();
+	// var xhr = new XMLHttpRequest();
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var xhr = new XHR();
 	xhr.withCredentials = true;
 	xhr.open('GET', serverUrl+'signout', true);
 	xhr.send();
@@ -541,4 +560,52 @@ function validate(){
 		return true;
 	}	
 	return false;
+}
+
+
+/*
+	Upload Image (320x240 .jpg .phg .gif)
+*/
+
+function getFile(){
+	document.getElementById('inputFile').click();
+}
+
+// добавляем слушатель событий на элемент id == "inputFile",
+// когда пользователь выбрал файл, проиcходит его автоматическая загрузка через функцию upload()
+document.getElementById("inputFile").addEventListener("change", function(event) {
+    var file = document.forms.feedback.inputFile.files[0];
+    console.log("file: "+file);
+    uploadImage(file);
+}, false);
+
+function uploadImage(file){
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var xhr = new XHR();
+	xhr.upload.onprogress = function(event) {
+		console.log(event.loaded + ' / ' + event.total);
+	}
+	// xhr.open("POST", "http://93.88.210.4:8080/backend/upload.php", true);
+	xhr.open("POST", serverUrl+"upload", true);
+	var formData = new FormData();
+		formData.append("myfile", file);	
+	xhr.send(formData);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState != 4){
+			return;
+		}
+		if (xhr.status != 200) {
+		  console.log( xhr.status + ': ' + xhr.statusText );
+		} else {
+			try {
+		    	var response = JSON.parse(xhr.responseText);
+		    	console.error("response.status: "+response.status);
+		    	if(response.status){
+		    		// showPhoto(file.name);
+		    	}
+			} catch (e) {
+		    	console.error( "Некорректный ответ " + e.message );
+			}
+		}
+	}
 }
