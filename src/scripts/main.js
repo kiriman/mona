@@ -4,8 +4,8 @@
 document.addEventListener("DOMContentLoaded", getCommentsRequest);
 
 // url бэкенд сервера
- var serverUrl = 'https://operun.herokuapp.com/api/';
-//var serverUrl = 'http://93.88.210.4:8080/api/';
+// var serverUrl = 'https://operun.herokuapp.com/api/';
+ var serverUrl = 'http://93.88.210.4:8080/api/';
 
 // блок в который будут добавлены загруженные с сервера комментарии
 var wrapper = document.getElementById("wrapper");
@@ -210,6 +210,7 @@ function editCommentTemplate(id, text){
 }
 
 function startEditText(id){
+	if(!user.isadmin){return;}
 	if(id === "preview"){return;}
 	if(updateCommentsProc){return;}
 	if(currentId != null){
@@ -219,14 +220,16 @@ function startEditText(id){
 	var text = document.getElementById("text-"+currentId);
 	var currentEditBlock = document.createElement("div");
 	currentEditBlock.innerHTML = editCommentTemplate(currentId, text.innerHTML);
-	text.style.display="none";
-	text.parentNode.appendChild( currentEditBlock );
+	text.style.display="none";//hide current text
+	text.parentNode.lastChild.style.display="none";// hide footer
+	text.parentNode.appendChild( currentEditBlock );//add edit textarea
 }
 
 function cancelEditText(){
 	var currentText = document.getElementById("text-"+currentId);
 	currentText.style.display="block";
 	currentText.parentNode.lastChild.remove();
+	currentText.parentNode.lastChild.style.display="block";
 	
 	currentId = null;
 }
@@ -313,12 +316,16 @@ function clearFormData(){
 }
 
 function preview(){
+	if(!validate()){return;}
 	var comment = getFormData();
 	comment.id = "preview";
-	comment.create_time = new Date().toLocaleString("ru");
-
+	comment.create_time = new Date().toLocaleString("ru")
+	
 	var preveiwComment = document.createElement("div");
- 	preveiwComment.innerHTML = createCommentTemplate(comment);
+	preveiwComment.className = "panel panel-default";
+	preveiwComment.setAttribute("id", "comment-preview");
+	var commentTemplate = createCommentTemplate(comment);
+ 	preveiwComment.innerHTML = commentTemplate;
 
  	// добавляем preview html-блок с комментарием на страницу
 	document.getElementById("preview").appendChild(preveiwComment);
@@ -338,6 +345,7 @@ function cancelPreview(){
 
 function addCommentRequest(){
 	// disableEditTextBlock();
+	if(!validate()){return;}
 	updateCommentsProc = true;
 	var comment = getFormData();
 
@@ -362,15 +370,7 @@ function addCommentRequest(){
 			if( result.status ){
 				//очищаем форму обратнойсвязи
 				clearFormData();
-
-				// currentId = null;
-				// currentText.innerHTML = newText;
-				// currentText.style.display="block";
-				// currentText.parentNode.lastChild.remove();
 			}
-		  // JSON.parse();
-		  // JSON.stringify();
-		  // console.log( result[0]['text'] );
 		}
 		updateCommentsProc = false;
 	}
@@ -407,17 +407,10 @@ function signIn(){
 			console.log("signIn() session_id: "+result.session_id);
 
 			if( result.status ){
-				//очищаем форму обратнойсвязи
-				// clearFormData();
 				user.login = result.login;
 				user.session_id = result.session_id;
-				document.cookie = "userName="+user.login;//, isadmin="+result.isadmin;
-				// showHideAuthForm("show");
+				document.cookie = "userName="+user.login;
 				showHideAuthForm(user.login);
-				// document.getElementById("userLogin").innerHTML = user.login;
-				// document.getElementById("form-signin").style.display = "none";
-				// document.getElementById("form-signout").style.display = "block";
-
 				getCommentsRequest();
 			}else{
 				alert("Неверный Логин или Пароль !");
@@ -439,7 +432,6 @@ function signOut(){
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
 			var result = JSON.parse( xhr.responseText );
-			// console.log("signOut stop: "+xhr.responseText);
 
 			if( result.status ){
 				
@@ -455,9 +447,6 @@ function signOut(){
 			}
 		}
 	}
-	// document.getElementById("form-signin").style.display = "block";
-	// document.getElementById("form-signout").style.display = "none";
-	// document.getElementById("userLogin").innerHTML = "";	
 }
 
 function showHideAuthForm(userName){
@@ -474,3 +463,54 @@ function showHideAuthForm(userName){
 	}
 }
 
+/*
+	Validate
+*/
+function removeErrorClass(el){
+	el.parentNode.parentNode.className = "form-group";
+}
+function removeAllErrorClass(){
+	var elements = document.forms.feedback.getElementsByClassName("form-group");
+	for (var i = elements.length - 1; i >= 0; i--) {
+		elements[i].className = "form-group";
+	};
+}
+// validate() валидация полей ввода 
+function validate(){
+	removeAllErrorClass();
+
+	var check = [];
+		check['status'] = true;
+
+	var regex_name = /[a-zа-яё]+/i;
+	var regex_email = /\S+@\S+\.\S+/;
+
+	var comment = getFormData();
+	
+	//валидация name
+	if(regex_name.exec(comment.name) == null){
+		let el = document.getElementById("inputName");
+		el.parentNode.parentNode.classList.add("has-error");
+		el.addEventListener("click", function(){removeErrorClass(el)});
+		check['status'] = false;
+	}
+	//валидация email
+	if(regex_email.exec(comment.email) == null){
+		let el = document.getElementById("inputEmail");
+		el.parentNode.parentNode.classList.add("has-error");
+		el.addEventListener("click", function(){removeErrorClass(el)});
+		check['status'] = false;
+	}
+	//валидация на пустое сообщение (на пробелы)
+	if(comment.text.replace(/\s/g,'')==''){
+		let el = document.getElementById("inputText");
+		el.parentNode.parentNode.classList.add("has-error");
+		el.addEventListener("click", function(){removeErrorClass(el)});
+		check['status'] = false;
+	}
+
+	if(check['status']){
+		return true;
+	}	
+	return false;
+}
