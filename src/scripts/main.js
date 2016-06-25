@@ -3,9 +3,9 @@
 // когда страница (DOM-дерево) полностью загружена, получаем комментарии с сервера getCommentsRequest()
 document.addEventListener("DOMContentLoaded", getCommentsRequest);
 
-// url бэкенд сервера
-// var serverUrl = 'https://operun.herokuapp.com/api/';
-var serverUrl = 'http://93.88.210.4:8080/api/';
+// бэкенд сервер url:
+// var serverUrl = 'https://operun.herokuapp.com/';
+var serverUrl = 'http://93.88.210.4:8080/';
 
 // блок в который будут добавлены загруженные с сервера комментарии
 var wrapper = document.getElementById("wrapper");
@@ -36,7 +36,7 @@ function getCommentsRequest(){
 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	xhr.open('GET', serverUrl+'comments', true);//true - асинхронно
+	xhr.open('GET', serverUrl+'api/comments', true);//true - асинхронно
 	xhr.send();
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState != 4){//отправка данных завершена
@@ -46,20 +46,23 @@ function getCommentsRequest(){
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
 			var response = JSON.parse(xhr.responseText);
+
 			if(response.status){
-				wrapper.innerHTML = "";
+				user.login = response.login;
+				if(!user.login){showHideAuthForm("");}
 				user.isadmin = response.isadmin;
 				comments = JSON.parse(response.data);
 
 				//добавляем комментарии на страницу
-				addComments(comments, response.isadmin);
+				renderAllComments(comments, response.isadmin);
 			}		  
 		}
 	}
 }
 
 // функция добавления комментариев
-function addComments(comments){
+function renderAllComments(comments){
+	wrapper.innerHTML = "";
 	for (var i = comments.length - 1; i >= 0; i--) {
 
 		// создаем html-блок комментария по шаблону
@@ -69,8 +72,17 @@ function addComments(comments){
 		var commentTemplate = createCommentTemplate(comments[i]);
 	 	newComment.innerHTML = commentTemplate;
 
+	 	// добавляем картинку (миниатюру), если есть
+	 	if(comments[i]['image'] != null){
+	 		var thumb = document.createElement("img");
+	 		thumb.className = "media-object thumbnail-min";
+	 		thumb.src = serverUrl+"uploads/"+comments[i]['image'];
+	 		// var thumb = createThumbTemplate(comments[i]);
+	 		newComment.getElementsByTagName("a")[0].appendChild(thumb);
+	 	}
+
+	 	// создаем футер html-блока по шаблону (кнопки принять/отклонить)
 	 	if(user.isadmin){
-	 		// создаем футер html-блока по шаблону
 	 		var newFooter = document.createElement("div");
 	 		newFooter.className = "panel-footer text-right";
 	 		newFooter.setAttribute("id", "footer-"+comments[i]['id']);
@@ -81,9 +93,15 @@ function addComments(comments){
 
 	 	// добавляем созданый html-блок с комментарием на страницу
 		wrapper.appendChild(newComment);
-
 	};
 }
+// function createThumbTemplate(comment){
+// 	var html =
+// 	`
+// 	<img class="media-object thumbnail-min" src="`+serverUrl+`uploads/`+comment.image+`">
+// 	`;
+// 	return html;
+// }
 function createFooterTemplate(comment){
 	var html =
 	 `
@@ -97,8 +115,6 @@ function createFooterTemplate(comment){
 		</div>`
 	;
 	return html;
-	//autocomplete="off" checked>btn btn-default btn-xs
-	// `+ismoderatedBtnCheck(comment.is_moderated, 1)+`
 }
 // функция создания html-блока комментария
 function createCommentTemplate(comment){
@@ -118,8 +134,8 @@ function createCommentTemplate(comment){
 	      	  <div class="media">
 		        <pre class="media-body" onclick="startEditText('`+comment.id+`')" id="text-`+comment.id+`">`+comment.text+`</pre>
 		        <div class="media-right media-top">
-		          <a href="#" onclick="openImageModal()">
-		            <img class="media-object thumbnail-min" src="http://mobiliv.ru/_ph/139/2/768290635.jpg">
+		          <a href="#" onclick="openImageModal('`+comment.id+`')" data-toggle="modal" data-target="#modalImage">
+		            
 		          </a>
 		        </div>
 		      </div>
@@ -130,17 +146,17 @@ function createCommentTemplate(comment){
 	return html;
 }
 
-function openImageModal(){
+function openImageModal(id){
 	var img = document.createElement("img");
 	img.className = "thumbnail";
-	img.setAttribute("src", "http://mobiliv.ru/_ph/139/2/768290635.jpg");
+	img.src = document.getElementById("comment-"+id).getElementsByTagName("img")[0].src;
 
 	var modalImageBlock = document.getElementById("modalImageBlock");
 	while (modalImageBlock.firstChild) {
 	    modalImageBlock.removeChild(modalImageBlock.firstChild);
 	}
 	modalImageBlock.appendChild(img);
-	$('#modalImage').modal();
+	// $('#modalImage').modal();
 }
 
 // функция проверки на изменения комметария администратором
@@ -183,7 +199,7 @@ function changeModerateState(id, is_moderated){
 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	xhr.open('PUT', serverUrl+'moderate', true);//true - асинхронно
+	xhr.open('PUT', serverUrl+'api/moderate', true);//true - асинхронно
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState != 4){//отправка данных завершена
@@ -292,7 +308,7 @@ function updateCommentsRequest(id){
 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	xhr.open('PUT', serverUrl+'comments', true);//true - асинхронно
+	xhr.open('PUT', serverUrl+'api/comments', true);//true - асинхронно
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState != 4){//отправка данных завершена
@@ -348,17 +364,11 @@ function clearFormData(){
 	form.elements.inputFile.value = "";
 }
 
+// создаем preview html-блок используя шаблоны
 function preview(){
-	// if(!validate()){return;}
+	if(!validate()){return;}
 
 	document.getElementById("formGroupBtn").parentNode.className = "col-sm-12";
-	// var cancelBtn = document.createElement('button');
-	// cancelBtn.className = "btn btn-default";
-	// cancelBtn.setAttribute("onclick", "cancelPreview()");
-	// cancelBtn.setAttribute("id", "cancelPreviewBtn");
-	// cancelBtn.innerHTML = "Cancel123"
-	// document.getElementById("formGroupBtn").appendChild(cancelBtn);
-	// <button class="btn btn-default" onclick="cancelPreview()" id="cancelPreviewBtn" style="display: none;">Отмена</button>
 	var comment = getFormData();
 	comment.id = "preview";
 	comment.create_time = new Date().toLocaleString("ru")
@@ -372,6 +382,15 @@ function preview(){
  	// добавляем preview html-блок с комментарием на страницу
 	document.getElementById("preview").appendChild(preveiwComment);
 
+	// добавляем в preview картинку (если есть)
+	if(document.forms.feedback.inputFile.files[0] != undefined){
+		var thumb = document.createElement("img");
+ 		thumb.className = "media-object thumbnail-min";
+ 		thumb.src = document.getElementById("inputImage").src;
+ 		preveiwComment.getElementsByTagName("a")[0].appendChild(thumb);
+	}
+
+	//скрываем форму вода комментария
 	document.getElementById("form-feedback").style.display = "none";
 	document.getElementById("previewBtn").style.display = "none";
 	document.getElementById("cancelPreviewBtn").style.display = "inline";
@@ -388,20 +407,37 @@ function cancelPreview(){
 
 }
 
+// Добавляем комментарий на сервер
 function addCommentRequest(){
 	if(!validate()){return;}
 	document.getElementById("addCommentBtn").disabled = true;
 	updateCommentsProc = true;
+	
+	//
+	var file = document.forms.feedback.inputFile.files[0];
+	//
 
 	var comment = getFormData();
-	var data = JSON.stringify(comment);
+	// var data = JSON.stringify(comment);
 	// var xhr = new XMLHttpRequest();
 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	xhr.open('POST', serverUrl+'comments', true);//true - асинхронно
-	// xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-	xhr.send(data);
+	//
+	xhr.upload.onprogress = function(event) {
+		// console.log(event.loaded + ' / ' + event.total);
+	}
+	//
+	xhr.open('POST', serverUrl+'api/comment', true);
+	var formData = new FormData();
+		formData.append("image_file", file);	
+		formData.append("name", comment.name);
+		formData.append("email", comment.email);
+		formData.append("text", comment.text);
+	xhr.send(formData);
+	// xhr.open('POST', serverUrl+'api/comment', true);//true - асинхронно
+	//// xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	// xhr.send(data);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState != 4){//отправка данных завершена
 			return;
@@ -409,14 +445,18 @@ function addCommentRequest(){
 		if (xhr.status != 200) {
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
+			console.log(xhr.responseText);
 			var result = JSON.parse( xhr.responseText );
-			console.log("result: "+result.status);
+			// console.log("result: "+result.status);
 
 			if( result.status ){
+				document.getElementById("successInfoBlock").style.display = "block";
 				//очищаем форму обратнойсвязи
 				clearFormData();
 				//удаляем html-блок preview (если есть)
 				cancelPreview();
+				//удаляем картинку прикрепленную к форме обратной связи (если есть картинке)
+				cancelImage();
 			}
 		}
 
@@ -441,7 +481,7 @@ function signIn(){
 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	xhr.open('POST', serverUrl+'signin', true);
+	xhr.open('POST', serverUrl+'api/signin', true);
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState != 4){//отправка данных завершена
@@ -469,7 +509,7 @@ function signOut(){
 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	xhr.open('GET', serverUrl+'signout', true);
+	xhr.open('GET', serverUrl+'api/signout', true);
 	xhr.send();
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState != 4){//отправка данных завершена
@@ -486,7 +526,6 @@ function signOut(){
 				user.session_id = "";
 				document.cookie = "userName=";
 
-				// showHideAuthForm("hide");
 				showHideAuthForm(user.login);
 				getCommentsRequest();
 			}else{
@@ -575,37 +614,175 @@ function getFile(){
 // когда пользователь выбрал файл, проиcходит его автоматическая загрузка через функцию upload()
 document.getElementById("inputFile").addEventListener("change", function(event) {
     var file = document.forms.feedback.inputFile.files[0];
-    console.log("file: "+file);
-    uploadImage(file);
+    // console.log("file: "+file);
+    // // uploadImage(file);
+
+    document.getElementById("inputImagePlaceholder").style.display = "none";
+	document.getElementById("cancelImageBtn").style.display = "inline";
+	document.getElementById("inputImage").style.display = "inline";
+	// inputImage.title = selectedFile.name;
+
+	var selectedFile = event.target.files[0];
+	var img = document.getElementById("inputImage");
+	
+	var reader = new FileReader();
+	reader.onload = function(event) {
+		img.src = event.target.result;
+
+		var MAX_WIDTH = 128;
+		var MAX_HEIGHT = 96;
+		var width = img.width;
+		var height = img.height;
+		 
+		if (width > height) {
+		  if (width > MAX_WIDTH) {
+		    height *= MAX_WIDTH / width;
+		    width = MAX_WIDTH;
+		  }
+		} else {
+		  if (height > MAX_HEIGHT) {
+		    width *= MAX_HEIGHT / height;
+		    height = MAX_HEIGHT;
+		  }
+		}
+		// console.log("width: "+width+", height: "+height);
+		img.width = width;
+		img.height = height;
+				
+		// var c = document.getElementById("myCanvas");
+	 //    c.width = width;
+	 //    c.height = height;
+	 //    var ctx = c.getContext("2d");
+	 //    ctx.drawImage(img, 0, 0, width, height);
+	 //    var dataurl = c.toDataURL("image/png");
+	 //    document.getElementById("inputImage").src = dataurl;
+	};
+
+	reader.readAsDataURL(selectedFile);
 }, false);
 
-function uploadImage(file){
-	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
-	var xhr = new XHR();
-	xhr.upload.onprogress = function(event) {
-		console.log(event.loaded + ' / ' + event.total);
-	}
-	// xhr.open("POST", "http://93.88.210.4:8080/backend/upload.php", true);
-	xhr.open("POST", serverUrl+"upload", true);
-	var formData = new FormData();
-		formData.append("myfile", file);	
-	xhr.send(formData);
-	xhr.onreadystatechange = function() {
-		if (xhr.readyState != 4){
-			return;
-		}
-		if (xhr.status != 200) {
-		  console.log( xhr.status + ': ' + xhr.statusText );
-		} else {
-			try {
-		    	var response = JSON.parse(xhr.responseText);
-		    	console.error("response.status: "+response.status);
-		    	if(response.status){
-		    		// showPhoto(file.name);
-		    	}
-			} catch (e) {
-		    	console.error( "Некорректный ответ " + e.message );
-			}
-		}
-	}
+
+function cancelImage(){
+	document.getElementById("inputFile").value = "";
+
+	document.getElementById("inputImagePlaceholder").style.display = "table-cell";
+	document.getElementById("cancelImageBtn").style.display = "none";
+	document.getElementById("inputImage").style.display = "none";
+
+	document.getElementById("inputImage").src = "";
 }
+
+// function uploadImage(file){
+// function uploadImage(){
+// 	var file = document.forms.feedback.inputFile.files[0];
+
+// 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+// 	var xhr = new XHR();
+// 	xhr.upload.onprogress = function(event) {
+// 		console.log(event.loaded + ' / ' + event.total);
+// 	}
+// 	xhr.open("POST", serverUrl+"api/upload", true);
+// 	var formData = new FormData();
+// 		formData.append("myfile", file);	
+// 	xhr.send(formData);
+// 	xhr.onreadystatechange = function() {
+// 		if (xhr.readyState != 4){
+// 			return;
+// 		}
+// 		if (xhr.status != 200) {
+// 		  console.log( xhr.status + ': ' + xhr.statusText );
+// 		} else {
+// 			try {
+// 		    	var response = JSON.parse(xhr.responseText);
+// 		    	console.error("response.status: "+response.status);
+// 		    	if(response.status){
+// 		    		// showPhoto(file.name);
+// 		    	}
+// 			} catch (e) {
+// 		    	console.error( "Некорректный ответ " + e.message );
+// 			}
+// 		}
+// 	}
+// }
+
+/*
+	Sort Order
+*/
+function sortComments(el){
+	var chevron = document.getElementById("chevron");
+	// console.log(el.id);
+	// console.log(chevron.parentNode.id);
+	if(el.id == chevron.parentNode.id){
+		if(chevron.className == "glyphicon glyphicon-chevron-up"){
+			chevron.className = "glyphicon glyphicon-chevron-down";
+		}else{
+			chevron.className = "glyphicon glyphicon-chevron-up";
+		}
+	}else{
+		chevron.remove();
+		var chevron = document.createElement('span');
+		chevron.className = "glyphicon glyphicon-chevron-down";
+		chevron.setAttribute("id", "chevron");
+		el.appendChild(chevron);		
+	}
+
+	// // console.log(comments[0]['id']);
+	// comments.forEach(function(item, i, arr) {
+	//   console.log( i + ": " + item + " (массив:" + arr + ")" );
+	// });
+	// console.log(sort_numbers(2, 5));
+
+// var numbers = [4, 2, 5, 1, 3];
+// numbers.sort(function(a, b) {
+//   return a - b;
+// });
+// console.log(numbers);
+console.log("______start_______");
+	// вывести до
+	for(var i = 0; i < comments.length; i++) {
+		// var t = new Date(comments[i].create_time).getTime();
+		// comments[i].t = t;
+	  console.log(comments[i].id+": "+comments[i].create_time); // Вовочка Маша Вася
+	}
+	// comments[i].create_time
+
+	console.log("sorting...");
+	comments.sort(compareNameUp);
+	// comments.sort();
+
+	// вывести после
+	for(var i = 0; i < comments.length; i++) {
+	  console.log(comments[i].id+": "+comments[i].create_time); // Вовочка Маша Вася
+	}
+console.log("______end_______");
+renderAllComments(comments);
+}
+// Наша функция сравнения
+function compareNameUp(a, b) {
+  // return a.create_time - b.create_time;
+  // return a.name - b.name;
+
+  /////////
+  if (a.create_time > b.create_time) {
+    return 1;
+  }
+  if (a.create_time < b.create_time) {
+    return -1;
+  }
+  // a должно быть равным b
+  return 0;
+}
+
+// проверка
+// var vasya = { name: "Вася", age: 23 };
+// var masha = { name: "Маша", age: 18 };
+// var vovochka = { name: "Вовочка", age: 6 };
+
+// var people = [ vasya , masha , vovochka ];
+
+// people.sort(compareAge);
+
+// // вывести
+// for(var i = 0; i < people.length; i++) {
+//   alert(people[i].name); // Вовочка Маша Вася
+// }

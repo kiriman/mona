@@ -21,19 +21,41 @@ $options = array(
 $pdo = new PDO($dsn, $username, $password, $options);
 
 $isAdmin = function () use($pdo) {
-    $session_id = "q1clhkit4jkrqrg53ov61rb446";
+    $session_id = "ap4c59u8ocrur9tnvchs69gfh7";
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
     $stmt->execute(array('session_id' => $session_id));
-    $r = $stmt->fetch();
-    print_r($r);
-    if($r){
-    	echo "\n".$r['password']."\n";
-    	echo "true\n";
-    }else{
-    	echo "false\n";
-    }
+    // $r = $stmt->fetch();
+    // print_r($r);
+    return $stmt->fetch();
+
+    // if($r){
+    // 	echo "\n".$r['password']."\n";
+    // 	echo "true\n";
+    // }else{
+    // 	echo "false\n";
+    // }
 };
-$isAdmin();
+// $user = $isAdmin();
+// if($user){
+//     echo "\ntrue\n";
+// }else{
+//     echo "\nfalse\n";
+// }
+
+$query='UPDATE comments SET name = :name, email = :email, image = :image, text = :text WHERE id = :id';
+$stmt = $pdo->prepare($query);
+$stmt->execute(
+    array(
+        'name' => 'lll',
+        'email' => 'emem',
+        'text' => 'ttt',
+        'id' => 3,
+        'image' => 'filename'
+        )
+    );
+
+
+// echo "user: ".print_r($user['login']);
 
 // $sql = "select * from `$table`".($key?" WHERE id=$key":'');
 // $sql = "update `$table` set $set where id=$key";

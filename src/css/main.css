@@ -38,6 +38,7 @@ body{
 	background-color: whitesmoke;
 	border: 1px solid lightgrey;
 	display: table;
+	padding: 5px;
 }
 .thumbnail-mid-empty:hover{
 	border: 1px solid lightgreen;	
@@ -63,4 +64,15 @@ pre.media-body{
 
 hr{
 	border-top: 1px solid lightgrey;
+}
+.bg-success{
+	padding: 10px;
+	height: 40px;
+	color: grey;
+	text-align: center;
+	display: none;
+	cursor: pointer;
+}
+th{
+	cursor: pointer;
 }
