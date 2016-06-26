@@ -20,6 +20,7 @@ var user = {
 }
 var COMPARE_TYPE = "create_type";
 
+// показываем/скрываем форму ввода пароля
 showHideAuthForm(user.login);
 
 // возвращает cookie с именем name, если есть, если нет, то undefined
@@ -29,7 +30,6 @@ function getCookie(name) {
   ));
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
-
 
 // функция получения комментариев с сервера
 function getCommentsRequest(){
@@ -98,13 +98,8 @@ function renderAllComments(comments){
 		wrapper.appendChild(newComment);
 	};
 }
-// function createThumbTemplate(comment){
-// 	var html =
-// 	`
-// 	<img class="media-object thumbnail-min" src="`+SERVER_URL+`uploads/`+comment.image+`">
-// 	`;
-// 	return html;
-// }
+
+// шаблон футера коментария
 function createFooterTemplate(comment){
 	var html =
 	 `
@@ -149,10 +144,10 @@ function createCommentTemplate(comment){
 	return html;
 }
 
+//функция генерации модального окна с картинкой
 function openImageModal(id){
 	var img = document.createElement("img");
 	img.className = "thumbnail-full";
-	// img.src = document.getElementById("comment-"+id).getElementsByTagName("img")[0].src;
 	var img_path = document.getElementById("comment-"+id).getElementsByTagName("img")[0].src;
 	img.src = img_path.split("_")[0];
 
@@ -161,7 +156,6 @@ function openImageModal(id){
 	    modalImageBlock.removeChild(modalImageBlock.firstChild);
 	}
 	modalImageBlock.appendChild(img);
-	// $('#modalImage').modal();
 }
 
 // функция проверки на изменения комметария администратором
@@ -195,46 +189,34 @@ function ismoderatedBtnCheck(is_moderated, option){
 	}
 	return "";
 }
+
+// функция изменения статуса комментария (принять/отклонить)
 function changeModerateState(id, is_moderated){
-	// var xhr = new XMLHttpRequest();
 	var data = JSON.stringify({
   						id: id,
 						is_moderated: is_moderated
 		});
-	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	xhr.open('PUT', SERVER_URL+'api/moderate', true);//true - асинхронно
+	xhr.open('PUT', SERVER_URL+'api/moderate', true);
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
-		if (xhr.readyState != 4){//отправка данных завершена
+		if (xhr.readyState != 4){
 			return;
 		}
 		if (xhr.status != 200) {
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
 			var result = JSON.parse( xhr.responseText );
-			// console.log(result.status);
-
 			if( result.status ){
 				// console.log("changed");
 			}
 		}
-		// updateCommentsProc = false;
 	}
-	
-	// if(document.getElementById('option1-'+id).checked){
-	// 	console.log("check:1");
-	// }else{
-	// 	console.log("check:2");
-	// }
-	// if(document.getElementById('option2-'+id).checked){
-	// 	console.log("check:2");
-	// }
-	// console.log("id: "+ id);
-	// console.log( document.querySelector('input[name="options-'+id+'"]:checked').id );
 }
 
+// генерация шаблона редактирования, выбранного комментария
 function editCommentTemplate(id, text){
 	var html = 
 		`<div class="panel-body">
@@ -249,6 +231,7 @@ function editCommentTemplate(id, text){
 	return html;
 }
 
+// инициализация редактирования комментария
 function startEditText(id){
 	if(!user.isadmin){return;}
 	if(id === "preview"){return;}
@@ -265,11 +248,6 @@ function startEditText(id){
 	currentEditBlock.innerHTML = editCommentTemplate(currentId, text.innerHTML);
 	text.parentNode.parentNode.parentNode.lastChild.style.display="none";// hide footer (<div class="panel-footer">)
 	text.parentNode.parentNode.parentNode.appendChild( currentEditBlock );//add edit textarea
-	
-	// text.style.display="none";//hide current text
-	// text.parentNode.lastChild.style.display="none";// hide footer
-	// text.parentNode.appendChild( currentEditBlock );//add edit textarea
-	// text.parentNode.insertBefore(currentEditBlock, text.parentNode.children[0]);
 }
 
 function cancelEditText(){
@@ -304,22 +282,19 @@ function updateCommentsRequest(id){
   						id: id,
 						newText: newText
 		});
-	// var xhr = new XMLHttpRequest();
-	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	xhr.open('PUT', SERVER_URL+'api/comments', true);//true - асинхронно
+	xhr.open('PUT', SERVER_URL+'api/comments', true);
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
-		if (xhr.readyState != 4){//отправка данных завершена
+		if (xhr.readyState != 4){
 			return;
 		}
 		if (xhr.status != 200) {
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
 			var result = JSON.parse( xhr.responseText );
-			// console.log(result.status);
-
 			if( result.status ){
 				document.getElementById("isedited-"+currentId).innerHTML = "изменен администратором...";
 				currentId = null;
@@ -413,19 +388,14 @@ function cancelPreview(){
 function addCommentRequest(){
 	if(!validate()){return;}
 	document.getElementById("addCommentBtn").disabled = true;
-	updateCommentsProc = true;
-	
+	updateCommentsProc = true;	
 	//
 	var file = document.forms.feedback.inputFile.files[0];
 	//
-
 	var comment = getFormData();
-	// var data = JSON.stringify(comment);
-	// var xhr = new XMLHttpRequest();
-	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
 	var xhr = new XHR();
 	xhr.withCredentials = true;
-	//
 	xhr.upload.onprogress = function(event) {
 		// console.log(event.loaded + ' / ' + event.total);
 	}
@@ -437,20 +407,14 @@ function addCommentRequest(){
 		formData.append("email", comment.email);
 		formData.append("text", comment.text);
 	xhr.send(formData);
-	// xhr.open('POST', SERVER_URL+'api/comment', true);//true - асинхронно
-	//// xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-	// xhr.send(data);
 	xhr.onreadystatechange = function() {
-		if (xhr.readyState != 4){//отправка данных завершена
+		if (xhr.readyState != 4){
 			return;
 		}
 		if (xhr.status != 200) {
 		  console.error( xhr.status + ': ' + xhr.statusText );
 		} else {
-			// console.log(xhr.responseText);
 			var result = JSON.parse( xhr.responseText );
-			// console.log("result: "+result.status);
-
 			if( result.status ){
 				//выводим info-block сообщение об успешном добавлении комментария
 				document.getElementById("successInfoBlock").style.display = "block";
@@ -464,7 +428,6 @@ function addCommentRequest(){
 				if(user.isadmin){getCommentsRequest();}
 			}
 		}
-
 		document.getElementById("addCommentBtn").disabled = false;
 		updateCommentsProc = false;
 	}
@@ -479,17 +442,18 @@ function getSigninFormData(){
 	}
 	return credential;
 }
+
+// авторизация
 function signIn(){
 	var credential = getSigninFormData();
 	var data = JSON.stringify(credential);
-	// var xhr = new XMLHttpRequest();
-	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
 	var xhr = new XHR();
 	xhr.withCredentials = true;
 	xhr.open('POST', SERVER_URL+'api/signin', true);
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
-		if (xhr.readyState != 4){//отправка данных завершена
+		if (xhr.readyState != 4){
 			return;
 		}
 		if (xhr.status != 200) {
@@ -508,16 +472,17 @@ function signIn(){
 		}
 	}
 }
+
+// выход
 function signOut(){
 	document.cookie = "userName=";
-	// var xhr = new XMLHttpRequest();
-	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
+	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
 	var xhr = new XHR();
 	xhr.withCredentials = true;
 	xhr.open('GET', SERVER_URL+'api/signout', true);
 	xhr.send();
 	xhr.onreadystatechange = function() {
-		if (xhr.readyState != 4){//отправка данных завершена
+		if (xhr.readyState != 4){
 			return;
 		}
 		if (xhr.status != 200) {
@@ -619,13 +584,10 @@ function getFile(){
 // когда пользователь выбрал файл, проиcходит его автоматическая загрузка через функцию upload()
 document.getElementById("inputFile").addEventListener("change", function(event) {
     var file = document.forms.feedback.inputFile.files[0];
-    // console.log("file: "+file);
-    // // uploadImage(file);
 
     document.getElementById("inputImagePlaceholder").style.display = "none";
 	document.getElementById("cancelImageBtn").style.display = "inline";
 	document.getElementById("inputImage").style.display = "inline";
-	// inputImage.title = selectedFile.name;
 
 	var selectedFile = event.target.files[0];
 	var img = document.getElementById("inputImage");
@@ -633,34 +595,6 @@ document.getElementById("inputFile").addEventListener("change", function(event) 
 	var reader = new FileReader();
 	reader.onload = function(event) {
 		img.src = event.target.result;
-
-		// var MAX_WIDTH = 128;
-		// var MAX_HEIGHT = 96;
-		// var width = img.width;
-		// var height = img.height;
-		 
-		// if (width > height) {
-		//   if (width > MAX_WIDTH) {
-		//     height *= MAX_WIDTH / width;
-		//     width = MAX_WIDTH;
-		//   }
-		// } else {
-		//   if (height > MAX_HEIGHT) {
-		//     width *= MAX_HEIGHT / height;
-		//     height = MAX_HEIGHT;
-		//   }
-		// }
-		// console.log("width: "+width+", height: "+height);
-		// img.width = width;
-		// img.height = height;
-				
-		// var c = document.getElementById("myCanvas");
-	 //    c.width = width;
-	 //    c.height = height;
-	 //    var ctx = c.getContext("2d");
-	 //    ctx.drawImage(img, 0, 0, width, height);
-	 //    var dataurl = c.toDataURL("image/png");
-	 //    document.getElementById("inputImage").src = dataurl;
 	};
 
 	reader.readAsDataURL(selectedFile);
@@ -669,58 +603,17 @@ document.getElementById("inputFile").addEventListener("change", function(event) 
 
 function cancelImage(){
 	document.getElementById("inputFile").value = "";
-
 	document.getElementById("inputImagePlaceholder").style.display = "table-cell";
 	document.getElementById("cancelImageBtn").style.display = "none";
 	document.getElementById("inputImage").style.display = "none";
-
 	document.getElementById("inputImage").src = "";
 }
-
-// function uploadImage(file){
-// function uploadImage(){
-// 	var file = document.forms.feedback.inputFile.files[0];
-
-// 	var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;//поддержка ie8-9
-// 	var xhr = new XHR();
-// 	xhr.upload.onprogress = function(event) {
-// 		console.log(event.loaded + ' / ' + event.total);
-// 	}
-// 	xhr.open("POST", SERVER_URL+"api/upload", true);
-// 	var formData = new FormData();
-// 		formData.append("myfile", file);	
-// 	xhr.send(formData);
-// 	xhr.onreadystatechange = function() {
-// 		if (xhr.readyState != 4){
-// 			return;
-// 		}
-// 		if (xhr.status != 200) {
-// 		  console.log( xhr.status + ': ' + xhr.statusText );
-// 		} else {
-// 			try {
-// 		    	var response = JSON.parse(xhr.responseText);
-// 		    	console.error("response.status: "+response.status);
-// 		    	if(response.status){
-// 		    		// showPhoto(file.name);
-// 		    	}
-// 			} catch (e) {
-// 		    	console.error( "Некорректный ответ " + e.message );
-// 			}
-// 		}
-// 	}
-// }
 
 /*
 	Sort Order
 */
 function sortComments(el){
-	// console.log("______start_______");
 	COMPARE_TYPE = getCompareType(el);
-	// console.log("getCompareType: "+getCompareType(el));
-	// вывести до
-	// for(var i = 0; i < comments.length; i++) {
-	//   console.log(comments[i].id+": "+comments[i][COMPARE_TYPE]);
-	// }
 
 	var chevron = document.getElementById("chevron");
 	if(el.id == chevron.parentNode.id){
@@ -739,17 +632,6 @@ function sortComments(el){
 		el.appendChild(chevron);
 		comments.sort(compareUp);		
 	}
-
-
-	// console.log("sorting...");
-	// comments.sort(compareUp);
-	// comments.sort(compareDown);
-
-	// вывести после
-	// for(var i = 0; i < comments.length; i++) {
-	//   console.log(comments[i].id+": "+comments[i][COMPARE_TYPE]); // Вовочка Маша Вася
-	// }
-	// console.log("______end_______");
 
 	renderAllComments(comments);
 }

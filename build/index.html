@@ -48,13 +48,7 @@
           <th class="col-sm-10" id="colEmail" onclick="sortComments(this)">Email </th>
           <th class="col-sm-1" id="colDate" onclick="sortComments(this)">Дата <span class="glyphicon glyphicon-chevron-down" id="chevron"></span></th>
         </thead>
-        <!-- <tbody>
-          <tr>        
-            <td>Имя</td>
-            <td>Email</td>
-            <td>Дата</td>
-          </tr>
-        </tbody> -->
+
       </table>
     </div>
 
@@ -70,13 +64,6 @@
       </button>
       Ваш комментарий появится на сайте после проверки модератором.
     </p>
-
-<!-- <button onclick="sss()">show</button> -->
-    <!-- <div class="row">
-      <button class="btn btn-success" onclick="event.preventDefault(); validate()">validate</button>
-      <button class="btn btn-success" onclick="event.preventDefault(); clearClass()">clear</button>
-    </div>
-    <p> -->
 
     <!-- Форма обратной связи -->
     <form class="form-horizontal" name="feedback" id="form-feedback">
@@ -105,20 +92,18 @@
 
         <div class="col-sm-4">
           <div class="form-group">
-
             <div class="thumbnail-mid-empty" id="inputImageBlock" style="float: left;" onclick="getFile()">
               <div id="inputImagePlaceholder">добавить<br>картинку<br>(.jpg, .gif, .png)</div>
               <img id="inputImage"  style="display: none">
             </div>
             <input type="file" name="inputFile" id="inputFile" style="display: none;" accept="image/jpeg,image/gif,image/png">
             <button class="btn btn-default btn-xs" id="cancelImageBtn" style="display: none; margin-left: 3px; margin-top: 1px;" onclick="event.preventDefault(); cancelImage()">X</button>
-
           </div>
         </div>
 
       </div>
     </form>
-<!-- width="128" height="96" -->
+
     <div class="row">
       <div class="col-sm-8">
         <div class="form-group text-right" id="formGroupBtn">
@@ -128,21 +113,7 @@
         </div>
       </div>
     </div>
-    <!-- 
-http://www.w3schools.com/tags/img_the_scream.jpg
-http://mobiliv.ru/_ph/139/2/768290635.jpg
- -->
-<!--     <div class="row">
-      <button class="btn btn-default" onclick="uploadImage()">uploadImage</button> -->
-        <!-- <img id="scream" width="200" height="200" src="http://www.w3schools.com/tags/img_the_scream.jpg" alt="The Scream"> -->
-    <!-- </div> -->
-
-<!-- 
-          <p>Canvas:</p>
-          <canvas id="myCanvas" width="240" height="297" style="border:1px solid #d3d3d3;">
-          Your browser does not support the HTML5 canvas tag.
-          </canvas>
- -->
+   
   </div><!-- /.container -->
 
 
@@ -151,9 +122,6 @@ http://mobiliv.ru/_ph/139/2/768290635.jpg
   <script src="scripts/main.min.js"></script>
 </body>
 </html>
-
-
-
 
 
 <!-- Modal Image-->

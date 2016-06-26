@@ -1,14 +1,9 @@
 <?php
-session_start();
-
-// https://devcenter.heroku.com/articles/php-sessions
-
 header("Access-Control-Allow-Origin: http://93.88.210.4:3001");
 header("Access-Control-Allow-Credentials: true");       
 header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");
-// $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
-// header("Access-Control-Allow-Headers: application/json");
 
+session_start();
 
 /*
     CONFIG: connect to MySQL
@@ -31,12 +26,10 @@ $pdo = new PDO($dsn, $username, $password, $options);
     API
 */
 
-// get the HTTP method, path and body of the request
-
 // $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 $method = $_SERVER['REQUEST_METHOD'];
 $request = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
-$input = json_decode(trim(file_get_contents('php://input')), true);//split to array
+$input = json_decode(trim(file_get_contents('php://input')), true);
 $response = [];
 
 $isAdmin = function () use ($pdo) {
@@ -75,7 +68,6 @@ switch ($method) {
                 $response['status'] = true;
                 $response['data'] = json_encode( $stmt->fetchAll() );
                 echo json_encode( $response );
-                // echo json_encode( $stmt->fetchAll() );
 
             break;
             case 'signout':

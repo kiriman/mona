@@ -33,14 +33,18 @@ gulp.task('useref', function () {
 
 // Copy static files
 gulp.task('copyApi', function () {
-  return gulp.src(['src/api/*.*'], {dot: true})
-    .pipe(gulp.dest('build/api/'));
+  return gulp.src(['src/api/**/*'], {dot: true})
+    .pipe(gulp.dest('build/api'));
 });
 gulp.task('copyFonts', function () {
-  return gulp.src('bower_components/bootstrap/fonts/*.*')
-    .pipe(gulp.dest('build/fonts/'));
+  return gulp.src('bower_components/bootstrap/fonts/**/*')
+    .pipe(gulp.dest('build/fonts'));
 });
-gulp.task('copy', gulp.parallel('copyApi','copyFonts'));
+gulp.task('copyUploads', function () {
+  return gulp.src(['src/uploads/**/*'], {dot: true})
+    .pipe(gulp.dest('build/uploads'));
+});
+gulp.task('copy', gulp.parallel('copyApi','copyFonts', 'copyUploads'));
 
 // Clean buld/ directory
 gulp.task('clean', function() {
@@ -66,9 +70,5 @@ gulp.task('php', function(){
   connectPHP.server({ base: 'src/', keepalive:true, hostname: '93.88.210.4', port:8080, open: false});
 });
 
-// gulp.task('default', function() {});
 gulp.task('serve', gulp.series('wiredep',gulp.parallel('browserSync','php')));
 gulp.task('build', gulp.series('clean',gulp.parallel('copy','wiredep'),'useref'));
-// .on('data', function(file){
-// 	console.log('copy: '+file);
-// })
