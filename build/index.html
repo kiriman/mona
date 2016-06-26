@@ -29,7 +29,7 @@
           </form>
 
           <form class="navbar-form navbar-right" name="signout" id="form-signout" style="display: none">
-            <span style="color: white" id="userLogin">Привет</span><span>&nbsp;&nbsp;</span>
+            <span style="color: white" id="userLogin">Привет, username</span><span>&nbsp;&nbsp;</span>
             <button class="btn btn-success" onclick="event.preventDefault(); signOut()">Выйти</button>
           </form>
 
@@ -44,9 +44,9 @@
     <div class="table-responsive">
       <table class="table table-striped table-condensed">
         <thead>
-          <th class="col-sm-1">Имя</th>
-          <th class="col-sm-10">Email</th>
-          <th class="col-sm-1">Дата <span class="glyphicon glyphicon-chevron-down"></span></th>
+          <th class="col-sm-1" id="colName" onclick="sortComments(this)">Имя </th>
+          <th class="col-sm-10" id="colEmail" onclick="sortComments(this)">Email </th>
+          <th class="col-sm-1" id="colDate" onclick="sortComments(this)">Дата <span class="glyphicon glyphicon-chevron-down" id="chevron"></span></th>
         </thead>
         <!-- <tbody>
           <tr>        
@@ -64,6 +64,14 @@
 
     <div id="preview"></div>
 
+    <p class="bg-success" id="successInfoBlock" onclick="this.style.display='none'">
+      <button type="button" class="close" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      Ваш комментарий появится на сайте после проверки модератором.
+    </p>
+
+<!-- <button onclick="sss()">show</button> -->
     <!-- <div class="row">
       <button class="btn btn-success" onclick="event.preventDefault(); validate()">validate</button>
       <button class="btn btn-success" onclick="event.preventDefault(); clearClass()">clear</button>
@@ -72,91 +80,87 @@
 
     <!-- Форма обратной связи -->
     <form class="form-horizontal" name="feedback" id="form-feedback">
-      <div class="form-group">
-        <label for="inputName" class="col-sm-2 control-label">Имя</label>
-        <div class="col-sm-8">
-          <input type="text" class="form-control" id="inputName" placeholder="Имя">
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="inputEmail" class="col-sm-2 control-label">Email</label>
-        <div class="col-sm-8">
-          <input type="email" class="form-control" id="inputEmail" placeholder="Email">
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="inputText" class="col-sm-2 control-label">Отзыв</label>
-        <div class="col-sm-8">
-          <textarea class="form-control" rows="3" id="inputText" placeholder="Текс сообщения"></textarea>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-8" >
-          <label for="inputFile">Прикрепить картинку</label>
-          <input type="file" id="inputFile">
-          <!-- <p class="help-block"></p>
-          <button type="submit" class="btn btn-default">Отправить</button>
-          <button class="btn btn-default" onclick="event.preventDefault(); preview()">Предварительный просмотр</button>
-          <button class="btn btn-default" onclick="event.preventDefault(); cancelPeview()" id="cancelPeviewBtn">Отмена</button> -->
-        </div>
-      </div>
-    </form>
+      <div class="row">
 
-    <div class="col-sm-offset-2 col-sm-10" style="margin-left: 95px;">
-      <div class="col-sm-1">
-        <button type="submit" class="btn btn-default" onclick="event.preventDefault(); addCommentRequest()" id="addCommentBtn">Добавить</button>
-      </div>
-      <div class="col-sm-offset-1 col-sm-5">
-        <button class="btn btn-default" onclick="preview()" id="previewBtn">Предварительный просмотр</button>
-      </div>
-      <div class="col-sm-offset-1 col-sm-5">
-        <button class="btn btn-default" onclick="cancelPreview()" id="cancelPreviewBtn" style="display: none;">Отмена</button>
-      </div>
-    </div>
-
-    <!-- Button trigger modal -->
-<!-- <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
-  Launch demo modal
-</button> -->
-
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Вход</h4>
-      </div>
-      <div class="modal-body">
-        <form class="form-horizontal" name="form-auth" id="form-auth123">
+        <div class="col-sm-offset-2 col-sm-6">
           <div class="form-group">
             <label for="inputName" class="col-sm-2 control-label">Имя</label>
-            <div class="col-sm-8">
-              <input type="text" class="form-control" id="inputAuthName123" placeholder="Имя">
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="inputName" placeholder="Имя">
             </div>
           </div>
           <div class="form-group">
-            <label for="inputName" class="col-sm-2 control-label">Пароль</label>
-            <div class="col-sm-8">
-              <input type="password" class="form-control" id="inputAuthPassword123" placeholder="Пароль">
+            <label for="inputEmail" class="col-sm-2 control-label">Email</label>
+            <div class="col-sm-10">
+              <input type="email" class="form-control" id="inputEmail" placeholder="Email">
             </div>
           </div>
-        </form>
+          <div class="form-group">
+            <label for="inputText" class="col-sm-2 control-label">Отзыв</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" rows="3" id="inputText" placeholder="Текс сообщения"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-4">
+          <div class="form-group">
+
+            <div class="thumbnail-mid-empty" id="inputImageBlock" style="float: left;" onclick="getFile()">
+              <div id="inputImagePlaceholder">добавить<br>картинку<br>(.jpg, .gif, .png)</div>
+              <img id="inputImage"  style="display: none">
+            </div>
+            <input type="file" name="inputFile" id="inputFile" style="display: none;" accept="image/jpeg,image/gif,image/png">
+            <button class="btn btn-default btn-xs" id="cancelImageBtn" style="display: none; margin-left: 3px; margin-top: 1px;" onclick="event.preventDefault(); cancelImage()">X</button>
+
+          </div>
+        </div>
 
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary">Войти</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+    </form>
+<!-- width="128" height="96" -->
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="form-group text-right" id="formGroupBtn">
+          <button class="btn btn-default" onclick="addCommentRequest()" id="addCommentBtn">Добавить</button>
+          <button class="btn btn-default" onclick="preview()" id="previewBtn">Предварительный просмотр</button>
+          <button class="btn btn-default" onclick="cancelPreview()" id="cancelPreviewBtn" style="display: none;">Отмена</button>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+    <!-- 
+http://www.w3schools.com/tags/img_the_scream.jpg
+http://mobiliv.ru/_ph/139/2/768290635.jpg
+ -->
+<!--     <div class="row">
+      <button class="btn btn-default" onclick="uploadImage()">uploadImage</button> -->
+        <!-- <img id="scream" width="200" height="200" src="http://www.w3schools.com/tags/img_the_scream.jpg" alt="The Scream"> -->
+    <!-- </div> -->
 
-
+<!-- 
+          <p>Canvas:</p>
+          <canvas id="myCanvas" width="240" height="297" style="border:1px solid #d3d3d3;">
+          Your browser does not support the HTML5 canvas tag.
+          </canvas>
+ -->
   </div><!-- /.container -->
+
 
   <script src="scripts/vendor.min.js"></script>
 
   <script src="scripts/main.min.js"></script>
 </body>
 </html>
+
+
+
+
+
+<!-- Modal Image-->
+<div class="modal fade" id="modalImage" tabindex="-1" role="dialog" aria-labelledby="modalImageLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body" id="modalImageBlock"></div>
+    </div>
+  </div>
+</div>

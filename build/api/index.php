@@ -40,7 +40,6 @@ $input = json_decode(trim(file_get_contents('php://input')), true);//split to ar
 $response = [];
 
 $isAdmin = function () use ($pdo) {
-    // $session_id = "12345";
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
     $stmt->execute( array( 'session_id' => session_id() ) );
     if( $stmt->fetch() ){
@@ -49,28 +48,28 @@ $isAdmin = function () use ($pdo) {
         return false;
     }
 };
-// $values = function () use ($input){
-//     $arr = [];
-//     foreach ($input as $key => $value) {
-//         if($key != "id"){
-//             $arr[$key] = $value;
-//         }
-//     }
-//     return $arr;
-// };
+$getUser = function () use ($pdo) {
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
+    $stmt->execute( array( 'session_id' => session_id() ) );
+    return $stmt->fetch();
+};
 
-// create SQL based on HTTP method
 switch ($method) {
     case 'GET':
         switch ($request[1]) {
             case 'comments':
-                $query='SELECT * FROM comments WHERE is_moderated = 1';
+                $query='SELECT * FROM comments WHERE is_moderated = 1 ORDER BY create_time ASC';
+                $response['login'] = false;
                 $response['isadmin'] = false;
-                if( $isAdmin() ){
-                    $query='SELECT * FROM comments';
-                    $response['isadmin'] = true;
-                }
 
+                $user = $getUser();
+                if( $user ){
+                    $response['login'] = $user['login'];
+                    if($user['is_admin'] == 1){
+                        $query='SELECT * FROM comments ORDER BY create_time ASC';
+                        $response['isadmin'] = true;
+                    }
+                }
                 $stmt = $pdo->prepare($query);
                 $stmt->execute();
                 $response['status'] = true;
@@ -91,6 +90,7 @@ switch ($method) {
                 $response['status'] = true;
                 echo json_encode( $response );
 
+                session_destroy();
             break;
         }
     break;
@@ -103,10 +103,11 @@ switch ($method) {
                 $newText = $input['newText'];
                 $query='UPDATE comments SET text = :newText, is_edited = :is_edited WHERE id = :id';
                 $stmt = $pdo->prepare($query);
-                $stmt->execute(array('newText' => $newText, 'is_edited' => '1', 'id' => $id));
+                $stmt->execute(array('newText' => strip_tags($newText), 'is_edited' => '1', 'id' => $id));
 
                 $response['status'] = true;
                 echo json_encode( $response );
+
             break;
             case 'moderate':
                 if( !$isAdmin() ){exit;};
@@ -124,24 +125,46 @@ switch ($method) {
 
     case 'POST':
         switch ($request[1]) {
-            case 'comments':
-                if( !$isAdmin() ){exit;};
-                $id = $input['id'];
-                $newText = $input['newText'];
-                $query='INSERT INTO comments SET name = :name, email = :email, text = :text';
+            case 'comment':
+                if(isset($_FILES['image_file'])){
+                    // проверяем является ли загруженный тип файла: gif, jpeg, png
+                    if( exif_imagetype($_FILES['image_file']['tmp_name']) == IMAGETYPE_GIF
+                        || exif_imagetype($_FILES['image_file']['tmp_name']) == IMAGETYPE_JPEG
+                        || exif_imagetype($_FILES['image_file']['tmp_name']) == IMAGETYPE_PNG)
+                    {
+                        $filename = md5( $_FILES['image_file']['name'] . time() );
+                        $destination = './../uploads/' . $filename;// /wwwroot/uploads/
+                        
+                        resizeImage($_FILES['image_file']['tmp_name'], $destination, 320, 240);
+                        resizeImage($destination, $destination.'_min', 64, 48);
+                        // move_uploaded_file( $_FILES['image_file']['tmp_name'] , $destination );
+
+                        $response["message"] = "file uploaded";
+                        $response["file_status"] = true;
+                    }else{
+                        $response["message"] = "file format error";
+                        $response["file_status"] = false;
+                    }                    
+                }else{
+                    $filename = null;
+                }
+                // $query='UPDATE comments SET name = :name, email = :email, image = :image, text = :text WHERE id = :id';//INSERT
+                $query='INSERT INTO comments SET name = :name, email = :email, text = :text, image = :image';
                 $stmt = $pdo->prepare($query);
                 $stmt->execute(
                     array(
-                        'login' => $input['name'],
-                        'email' => $input['email'],
-                        'text' => $input['text']
+                        'name' => strip_tags($_POST['name']),
+                        'email' => strip_tags($_POST['email']),
+                        'text' => strip_tags($_POST['text']),
+                        // 'id' => '1',//
+                        'image' => $filename
                         )
                     );
 
                 $response['status'] = true;
                 echo json_encode( $response );
-            break;
 
+            break;
             case 'signin':
                 $query='SELECT * FROM users WHERE login = :login AND password = :password LIMIT 1';
                 $stmt = $pdo->prepare($query);
@@ -151,9 +174,7 @@ switch ($method) {
                         'password' => $input['password']
                         )
                     );
-                // $count = $stmt->rowCount();
                 $user = $stmt->fetch();
-                // if($count == 1){
                 if($user){
                     $query='UPDATE users SET session_id = :session_id WHERE login = :login';
                     $stmt = $pdo->prepare($query);
@@ -161,8 +182,6 @@ switch ($method) {
 
                     $response['status'] = true;
                     $response['login'] = $user['login'];
-                    // $response['isadmin'] = $user['is_admin'];
-                    $response['session_id'] = session_id();
                 }else{
                     $response['status'] = false;
                 }
@@ -175,14 +194,32 @@ switch ($method) {
         
     break;
 }
+
+function resizeImage($filename, $destination, $max_width, $max_height){
+    list($orig_width, $orig_height) = getimagesize($filename);
+
+    $width = $orig_width;
+    $height = $orig_height;
+
+    // уменьшаем по высоте
+    if ($height > $max_height) {
+        $width = ($max_height / $height) * $width;
+        $height = $max_height;
+    }
+    // уменьшаем по ширине
+    if ($width > $max_width) {
+        $height = ($max_width / $width) * $height;
+        $width = $max_width;
+    }
+    $image_p = imagecreatetruecolor($width, $height);
+    $image = imagecreatefromjpeg($filename);
+    imagecopyresampled($image_p, $image, 0, 0, 0, 0, $width, $height, $orig_width, $orig_height);
+
+    imagejpeg($image_p, $destination, 75);
+
+    return true;
+}
+
 // $stmt->closeCursor();
 $pdo = null;
-
-//logout session_destroy();
-
-// if($_SESSION['counter']>3){
-//     unset($_SESSION['counter']);
-//     // session_unregister('var');
-// }
-
 ?>
