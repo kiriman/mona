@@ -1,6 +1,6 @@
 <?php
-header("Access-Control-Allow-Origin: http://93.88.210.4:3001");
-header("Access-Control-Allow-Credentials: true");       
+// header("Access-Control-Allow-Origin: http://93.88.210.4:3001");
+// header("Access-Control-Allow-Credentials: true");       
 header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");
 
 session_start();
@@ -140,7 +140,7 @@ switch ($method) {
                 }else{
                     $filename = null;
                 }
-                // $query='UPDATE comments SET name = :name, email = :email, image = :image, text = :text WHERE id = :id';//INSERT
+                // $query='UPDATE comments SET name = :name, email = :email, text = :text, image = :image WHERE id = :id';//INSERT
                 $query='INSERT INTO comments SET name = :name, email = :email, text = :text, image = :image';
                 $stmt = $pdo->prepare($query);
                 $stmt->execute(
@@ -148,7 +148,7 @@ switch ($method) {
                         'name' => strip_tags($_POST['name']),
                         'email' => strip_tags($_POST['email']),
                         'text' => strip_tags($_POST['text']),
-                        // 'id' => '1',//
+                        // 'id' => '5',//
                         'image' => $filename
                         )
                     );
