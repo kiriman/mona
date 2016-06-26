@@ -14,16 +14,34 @@ body{
 .text-right{
 	text-align: right;
 }
-.thumbnail{
-	width: 320px;
-	height: 240px;
+.thumbnail-full{
+	max-width: 320px;
+	max-height: 240px;
 	margin: auto;
 	border-radius: 4px;
+
 }
 .thumbnail-min{
 	width: 64px;
 	height: 48px;
 	border-radius: 4px;
+	/*background-color: whitesmoke;*/
+	/*border: 1px solid lightgrey;*/
+	padding: 5px;
+	text-align: center;
+	line-height: 48px;
+}
+.border{
+	background-color: whitesmoke;
+	border: 1px solid lightgrey;
+}
+.thumbnail-min>img{
+	max-width: 64px;
+	max-height: 48px;
+}
+.media-object{
+	max-width: 64px;
+	max-height: 48px;
 }
 .thumbnail-mid{
 	width: 128px;
@@ -33,12 +51,13 @@ body{
 .thumbnail-mid-empty{
 	width: 128px;
 	height: 96px;
-	/*line-height: 18px;*/
 	border-radius: 4px;
 	background-color: whitesmoke;
 	border: 1px solid lightgrey;
 	display: table;
 	padding: 5px;
+	text-align: center;
+	line-height: 96px;
 }
 .thumbnail-mid-empty:hover{
 	border: 1px solid lightgreen;	
@@ -49,7 +68,25 @@ body{
 	vertical-align: middle;
 	color: grey;
 	text-align: center; 
+	line-height: 16px;
 }
+.thumbnail-mid-empty>img{
+	max-width: 128px;
+	max-height: 96px;
+}
+.modal-body{
+	/*width: 330px;*/
+	/*height: 250px;*/
+	border-radius: 4px;
+	background-color: whitesmoke;
+	border: 1px solid lightgrey;
+	display: table;
+	padding: 5px;
+	text-align: center;
+	/*line-height: 250px;*/
+	margin: 10px auto;
+}
+
 .modal-dialog{
 	width: 360px;
 	margin: 200px auto;

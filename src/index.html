@@ -115,10 +115,10 @@
           <div class="form-group">
 
             <div class="thumbnail-mid-empty" id="inputImageBlock" style="float: left;" onclick="getFile()">
-              <div id="inputImagePlaceholder">добавить</br>картинку</div>
-              <img id="inputImage" width="128" height="96" style="display: none">
+              <div id="inputImagePlaceholder">добавить<br>картинку<br>(.jpg, .gif, .png)</div>
+              <img id="inputImage"  style="display: none">
             </div>
-            <input type="file" name="inputFile" id="inputFile" style="display: none;" accept="image/*">
+            <input type="file" name="inputFile" id="inputFile" style="display: none;" accept="image/jpeg,image/gif,image/png">
             <button class="btn btn-default btn-xs" id="cancelImageBtn" style="display: none; margin-left: 3px; margin-top: 1px;" onclick="event.preventDefault(); cancelImage()">X</button>
 
           </div>
@@ -126,7 +126,7 @@
 
       </div>
     </form>
-
+<!-- width="128" height="96" -->
     <div class="row">
       <div class="col-sm-8">
         <div class="form-group text-right" id="formGroupBtn">

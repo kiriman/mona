@@ -40,7 +40,6 @@ $input = json_decode(trim(file_get_contents('php://input')), true);//split to ar
 $response = [];
 
 $isAdmin = function () use ($pdo) {
-    // $session_id = "12345";
     $stmt = $pdo->prepare('SELECT * FROM users WHERE session_id = :session_id LIMIT 1');
     $stmt->execute( array( 'session_id' => session_id() ) );
     if( $stmt->fetch() ){
@@ -54,17 +53,7 @@ $getUser = function () use ($pdo) {
     $stmt->execute( array( 'session_id' => session_id() ) );
     return $stmt->fetch();
 };
-// $values = function () use ($input){
-//     $arr = [];
-//     foreach ($input as $key => $value) {
-//         if($key != "id"){
-//             $arr[$key] = $value;
-//         }
-//     }
-//     return $arr;
-// };
 
-// create SQL based on HTTP method
 switch ($method) {
     case 'GET':
         switch ($request[1]) {
@@ -136,24 +125,6 @@ switch ($method) {
 
     case 'POST':
         switch ($request[1]) {
-            // case 'commentold':
-            //     $id = $input['id'];
-            //     $newText = $input['newText'];
-            //     $query='INSERT INTO comments SET name = :name, email = :email, text = :text';
-            //     $stmt = $pdo->prepare($query);
-            //     //Раскомментировать в продакшене:
-            //     // $stmt->execute(
-            //     //     array(
-            //     //         'login' => strip_tags($input['name']),
-            //     //         'email' => strip_tags($input['email']),
-            //     //         'text' => strip_tags($input['text'])
-            //     //         )
-            //     //     );
-
-            //     $response['status'] = true;
-            //     echo json_encode( $response );
-
-            // break;
             case 'comment':
                 if(isset($_FILES['image_file'])){
                     // проверяем является ли загруженный тип файла: gif, jpeg, png
@@ -161,9 +132,12 @@ switch ($method) {
                         || exif_imagetype($_FILES['image_file']['tmp_name']) == IMAGETYPE_JPEG
                         || exif_imagetype($_FILES['image_file']['tmp_name']) == IMAGETYPE_PNG)
                     {
-                        $filename = $_FILES['image_file']['name'];
+                        $filename = md5( $_FILES['image_file']['name'] . time() );
                         $destination = './../uploads/' . $filename;// /wwwroot/uploads/
-                        move_uploaded_file( $_FILES['image_file']['tmp_name'] , $destination );
+                        
+                        resizeImage($_FILES['image_file']['tmp_name'], $destination, 320, 240);
+                        resizeImage($destination, $destination.'_min', 64, 48);
+                        // move_uploaded_file( $_FILES['image_file']['tmp_name'] , $destination );
 
                         $response["message"] = "file uploaded";
                         $response["file_status"] = true;
@@ -174,7 +148,6 @@ switch ($method) {
                 }else{
                     $filename = null;
                 }
-
                 // $query='UPDATE comments SET name = :name, email = :email, image = :image, text = :text WHERE id = :id';//INSERT
                 $query='INSERT INTO comments SET name = :name, email = :email, text = :text, image = :image';
                 $stmt = $pdo->prepare($query);
@@ -183,33 +156,13 @@ switch ($method) {
                         'name' => strip_tags($_POST['name']),
                         'email' => strip_tags($_POST['email']),
                         'text' => strip_tags($_POST['text']),
-                        // 'id' => '3',//
+                        // 'id' => '1',//
                         'image' => $filename
                         )
                     );
 
                 $response['status'] = true;
                 echo json_encode( $response );
-
-            break;
-            case 'upload':
-                $response = [];
-                // проверяем является ли загруженный тип файла: gif, jpeg, png
-                if( exif_imagetype($_FILES['myfile']['tmp_name']) == IMAGETYPE_GIF
-                    || exif_imagetype($_FILES['myfile']['tmp_name']) == IMAGETYPE_JPEG
-                    || exif_imagetype($_FILES['myfile']['tmp_name']) == IMAGETYPE_PNG)
-                {
-                    $filename = $_FILES['myfile']['name'];
-                    $destination = './../uploads/' . $filename;// /wwwroot/uploads/
-                    move_uploaded_file( $_FILES['myfile']['tmp_name'] , $destination );
-
-                    $response["message"] = "file uploaded";
-                    $response["status"] = true;
-                }else{
-                    $response["message"] = "file format error";
-                    $response["status"] = false;
-                }
-                echo json_encode($response);
 
             break;
             case 'signin':
@@ -241,7 +194,32 @@ switch ($method) {
         
     break;
 }
+
+function resizeImage($filename, $destination, $max_width, $max_height){
+    list($orig_width, $orig_height) = getimagesize($filename);
+
+    $width = $orig_width;
+    $height = $orig_height;
+
+    // уменьшаем по высоте
+    if ($height > $max_height) {
+        $width = ($max_height / $height) * $width;
+        $height = $max_height;
+    }
+    // уменьшаем по ширине
+    if ($width > $max_width) {
+        $height = ($max_width / $width) * $height;
+        $width = $max_width;
+    }
+    $image_p = imagecreatetruecolor($width, $height);
+    $image = imagecreatefromjpeg($filename);
+    imagecopyresampled($image_p, $image, 0, 0, 0, 0, $width, $height, $orig_width, $orig_height);
+
+    imagejpeg($image_p, $destination, 75);
+
+    return true;
+}
+
 // $stmt->closeCursor();
 $pdo = null;
-
 ?>
