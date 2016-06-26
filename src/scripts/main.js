@@ -4,7 +4,7 @@
 document.addEventListener("DOMContentLoaded", getCommentsRequest);
 
 // бэкенд сервер url:
-var SERVER_URL = 'https://mona-test.herokuapp.com/';
+var SERVER_URL = 'https://operun.herokuapp.com/';
 
 // var SERVER_URL = 'http://93.88.210.4:8080/';
 // var SERVER_URL = 'http://93.88.210.4/';

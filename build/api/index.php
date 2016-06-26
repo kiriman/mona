@@ -1,7 +1,6 @@
 <?php
 // header("Access-Control-Allow-Origin: http://93.88.210.4:3001");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Credentials: true");       
+// header("Access-Control-Allow-Credentials: true");       
 header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");
 
 session_start();
